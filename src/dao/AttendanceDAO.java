@@ -6,6 +6,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import model.Attendance;
@@ -25,27 +28,35 @@ public class AttendanceDAO {
      * @return 見つかった勤怠、見つからなければnull
      */
     public Attendance findByUserIdAndDate(int userId, Date date) {
-        // TODO: 実装
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
 		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
-			String sql = "SELECT id FROM attendance WHERE user_id = ? AND work_date = ?";
+			String sql = "SELECT id, user_id, work_date, start_time, end_time FROM attendance WHERE user_id = ? AND work_date = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			//sql文の?に入れるものを定義
-			ps.setLong(1, Attendance.getUserId());
-			ps.setString(2, Attendance.getWorkDate());
+			ps.setInt(1, userId);
+			ps.setDate(2, date);
 			
-			//sql文で見つかったidを返す
+			//sql文で見つかった勤怠を返す
 			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
-				return rs.getInt("id");
+			if(rs.next()) {
+				Attendance attendance = new Attendance();
+				attendance.setId(rs.getInt("id"));
+				attendance.setUserId(rs.getInt("user_id"));
+				attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
+				if (rs.getTime("start_time") != null) {
+					attendance.setStartTime(rs.getTime("start_time").toLocalTime());
+				}
+				if (rs.getTime("end_time") != null) {
+					attendance.setEndTime(rs.getTime("end_time").toLocalTime());
+				}
+				return attendance;
 			}
 		}catch (SQLException e) {
 			e.printStackTrace();
-			
 		}
 		
         return null;
@@ -57,9 +68,8 @@ public class AttendanceDAO {
      * @return 登録成功したらtrue
      */
     public boolean insert(Attendance attendance) {
-        // TODO: 実装
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
@@ -67,14 +77,14 @@ public class AttendanceDAO {
 			String sql = "INSERT INTO attendance(user_id, work_date, start_time) VALUES(?, ?, ?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			ps.setString(1, Attendance());
-			ps.setString(2, Attendance());
-			ps.setString(3, Attendance());
+			ps.setInt(1, attendance.getUserId());
+			ps.setDate(2, Date.valueOf(attendance.getWorkDate()));
+			ps.setTime(3, java.sql.Time.valueOf(attendance.getStartTime()));
 			
-			
+			int result = ps.executeUpdate();
+			return result > 0;
 		}catch (SQLException e) {
 			e.printStackTrace();
-			
 		}
         return false;
     }
@@ -85,7 +95,23 @@ public class AttendanceDAO {
      * @return 更新成功したらtrue
      */
     public boolean update(Attendance attendance) {
-        // TODO: 実装
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		}catch(ClassNotFoundException e) {
+			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+		}
+		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+			String sql = "UPDATE attendance SET end_time = ? WHERE id = ?";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			
+			ps.setTime(1, java.sql.Time.valueOf(attendance.getEndTime()));
+			ps.setInt(2, attendance.getId());
+			
+			int result = ps.executeUpdate();
+			return result > 0;
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
         return false;
     }
     
@@ -97,8 +123,37 @@ public class AttendanceDAO {
      * @return 勤怠一覧
      */
     public List<Attendance> findByUserIdAndMonth(int userId, int year, int month) {
-        // TODO: 実装
-        return null;
+        List<Attendance> attendanceList = new ArrayList<>();
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		}catch(ClassNotFoundException e) {
+			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+		}
+		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+			String sql = "SELECT id, user_id, work_date, start_time, end_time FROM attendance WHERE user_id = ? AND YEAR(work_date) = ? AND MONTH(work_date) = ? ORDER BY work_date";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setInt(1, userId);
+			ps.setInt(2, year);
+			ps.setInt(3, month);
+			
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				Attendance attendance = new Attendance();
+				attendance.setId(rs.getInt("id"));
+				attendance.setUserId(rs.getInt("user_id"));
+				attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
+				if (rs.getTime("start_time") != null) {
+					attendance.setStartTime(rs.getTime("start_time").toLocalTime());
+				}
+				if (rs.getTime("end_time") != null) {
+					attendance.setEndTime(rs.getTime("end_time").toLocalTime());
+				}
+				attendanceList.add(attendance);
+			}
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+        return attendanceList;
     }
 }
 

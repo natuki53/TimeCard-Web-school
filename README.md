@@ -12,7 +12,7 @@
 
 ## 技術スタック
 
-- Java 11
+- Java 21
 - Jakarta Servlet / JSP
 - MySQL 8.0
 - Maven
@@ -104,7 +104,7 @@ mvn clean package
 
 ## 開発環境
 
-- Java 11以上
+- Java 21
 - Maven 3.6以上
 - MySQL 8.0以上
 - Apache Tomcat 10.0以上（またはJakarta EE対応のサーブレットコンテナ）
