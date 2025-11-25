@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import dao.AttendanceDAO;
@@ -38,7 +39,7 @@ public class AttendanceServlet extends HttpServlet {
         // 今日のAttendanceを取得
         LocalDate today = LocalDate.now();
         AttendanceDAO attendanceDAO = new AttendanceDAO();
-        Attendance attendance = attendanceDAO.findByUserIdAndDate(user.getId(), today);
+        Attendance attendance = attendanceDAO.findByUserIdAndDate(user.getId(), Date.valueOf(today));
         
         // リクエスト属性にセット
         request.setAttribute("attendance", attendance);
@@ -70,7 +71,7 @@ public class AttendanceServlet extends HttpServlet {
         
         if ("start".equals(action)) {
             // 出勤処理
-            Attendance attendance = attendanceDAO.findByUserIdAndDate(user.getId(), today);
+            Attendance attendance = attendanceDAO.findByUserIdAndDate(user.getId(), Date.valueOf(today));
             
             if (attendance == null) {
                 // 今日のレコードがなければ新規作成してINSERT
@@ -86,7 +87,7 @@ public class AttendanceServlet extends HttpServlet {
             }
         } else if ("end".equals(action)) {
             // 退勤処理
-            Attendance attendance = attendanceDAO.findByUserIdAndDate(user.getId(), today);
+            Attendance attendance = attendanceDAO.findByUserIdAndDate(user.getId(), Date.valueOf(today));
             
             if (attendance != null) {
                 // 今日のレコードのend_timeをUPDATE
