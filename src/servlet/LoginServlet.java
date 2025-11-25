@@ -22,6 +22,14 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // セッションから登録成功メッセージを取得して表示
+        HttpSession session = request.getSession();
+        String registerSuccess = (String) session.getAttribute("registerSuccess");
+        if (registerSuccess != null) {
+            request.setAttribute("msg", registerSuccess);
+            session.removeAttribute("registerSuccess"); // 一度表示したら削除
+        }
+        
         // ログイン画面（login.jsp）を表示
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/login.jsp");
         dispatcher.forward(request, response);

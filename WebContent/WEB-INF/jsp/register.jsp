@@ -11,10 +11,10 @@
     <div class="container">
         <h1>新規登録</h1>
         
-        <!-- TODO: エラーメッセージ表示 -->
-        <% if( String msg = (String) request.getAttribute("msg");) %>
+        <!-- エラーメッセージ表示 -->
+        <% String msg = (String) request.getAttribute("msg"); %>
         <% if(msg != null) {%>
-           <p><b><%= msg %></b></p>
+           <p class="error-message"><b><%= msg %></b></p>
         <%} %>
         <form method="POST" action="<%= request.getContextPath() %>/register">
             <div class="form-group">

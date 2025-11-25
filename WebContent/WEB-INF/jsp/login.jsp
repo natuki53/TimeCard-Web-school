@@ -11,7 +11,15 @@
     <div class="container">
         <h1>ログイン</h1>
         
-        <!-- TODO: エラーメッセージ表示 -->
+        <!-- メッセージ表示 -->
+        <% String msg = (String) request.getAttribute("msg"); %>
+        <% if(msg != null) {%>
+           <p class="success-message"><b><%= msg %></b></p>
+        <%} %>
+        <% String errorMessage = (String) request.getAttribute("errorMessage"); %>
+        <% if(errorMessage != null) {%>
+           <p class="error-message"><b><%= errorMessage %></b></p>
+        <%} %>
         
         <form method="POST" action="<%= request.getContextPath() %>/login">
             <div class="form-group">
