@@ -6,7 +6,7 @@ import java.time.LocalTime;
 /**
  * 勤怠モデルクラス
  */
-public class Attendance {
+public class Attendance{
     private int id;
     private int userId;
     private LocalDate workDate;
