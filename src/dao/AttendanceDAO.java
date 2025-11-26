@@ -32,16 +32,26 @@ public class AttendanceDAO {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
 		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
-			String sql = "SELECT id FROM attendance WHERE user_id = ? AND work_date = ?";
+			String sql = "SELECT id, user_id, work_date, start_time, end_time FROM attendance WHERE user_id = ? AND work_date = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			//sql文の?に入れるものを定義
-			ps.setLong(1, Attendance.getUserId());
-			ps.setString(2, Attendance.getWorkDate());
+			ps.setInt(1, userId);
+			ps.setDate(2, date);
 			
 			//sql文で見つかったidを返す
 			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
-				return rs.getInt("id");
+			if(rs.next()) {
+				Attendance attendance = new Attendance();
+				attendance.setId(rs.getInt("id"));
+				attendance.setUserId(rs.getInt("user_id"));
+				attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
+				if(rs.getTime("start_time") != null) {
+					attendance.setStartTime(rs.getTime("start_time").toLocalTime());
+				}
+				if(rs.getTime("end_time") != null) {
+					attendance.setEndTime(rs.getTime("end_time").toLocalTime());
+				}
+				return attendance;;
 			}
 		}catch (SQLException e) {
 			e.printStackTrace();
@@ -67,9 +77,9 @@ public class AttendanceDAO {
 			String sql = "INSERT INTO attendance(user_id, work_date, start_time) VALUES(?, ?, ?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			ps.setString(1, Attendance());
-			ps.setString(2, Attendance());
-			ps.setString(3, Attendance());
+			ps.setInt(1, attendance.getUserId());
+			ps.setDate(2, attendance.getWorkDate());
+			ps.setTime(3, attendance.getStartTime());
 			
 			
 		}catch (SQLException e) {
