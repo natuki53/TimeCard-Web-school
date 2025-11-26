@@ -49,7 +49,7 @@ public class LoginServlet extends HttpServlet {
         if (user != null) {
             // ログイン成功：セッションにユーザー情報を保存
             HttpSession session = request.getSession();
-            session.setAttribute("user", user);
+            session.setAttribute("loginUser", user);
             
             // /attendanceにリダイレクト
             response.sendRedirect(request.getContextPath() + "/attendance");

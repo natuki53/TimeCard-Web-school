@@ -45,11 +45,12 @@ public class RegisterServlet extends HttpServlet {
         boolean success = userDAO.insert(user);
         
         if (success) {
-            // 登録成功：login.jspにリダイレクト
+            // 登録成功：成功メッセージをセッションに保存してlogin.jspにリダイレクト
+            request.getSession().setAttribute("registerSuccess", "新規登録が完了しました。ログインしてください。");
             response.sendRedirect(request.getContextPath() + "/login");
         } else {
             // 登録失敗：エラーメッセージを設定してregister.jspに戻す
-            request.setAttribute("errorMessage", "登録に失敗しました。ログインIDが既に使用されている可能性があります。");
+            request.setAttribute("msg", "登録に失敗しました。ログインIDが既に使用されている可能性があります。");
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/register.jsp");
             dispatcher.forward(request, response);
         }

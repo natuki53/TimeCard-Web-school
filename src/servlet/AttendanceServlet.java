@@ -28,7 +28,7 @@ public class AttendanceServlet extends HttpServlet {
             throws ServletException, IOException {
         // ログイン済みかチェック（セッション確認）
         HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute("loginUser");
         
         if (user == null) {
             // 未ログインなら/loginにリダイレクト
@@ -42,7 +42,7 @@ public class AttendanceServlet extends HttpServlet {
         Attendance attendance = attendanceDAO.findByUserIdAndDate(user.getId(), Date.valueOf(today));
         
         // リクエスト属性にセット
-        request.setAttribute("attendance", attendance);
+        request.setAttribute("todayAttendance", attendance);
         request.setAttribute("today", today);
         
         // attendance.jspにフォワード
@@ -55,7 +55,7 @@ public class AttendanceServlet extends HttpServlet {
             throws ServletException, IOException {
         // ログイン済みかチェック
         HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute("loginUser");
         
         if (user == null) {
             // 未ログインなら/loginにリダイレクト

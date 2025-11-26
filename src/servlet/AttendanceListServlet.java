@@ -26,7 +26,7 @@ public class AttendanceListServlet extends HttpServlet {
             throws ServletException, IOException {
         // ログイン済みかチェック
         HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute("loginUser");
         
         if (user == null) {
             // 未ログインなら/loginにリダイレクト
@@ -62,10 +62,21 @@ public class AttendanceListServlet extends HttpServlet {
         AttendanceDAO attendanceDAO = new AttendanceDAO();
         List<Attendance> attendanceList = attendanceDAO.findByUserIdAndMonth(user.getId(), year, month);
         
+        // 出勤日数を計算（start_timeがnullでない日数）
+        int attendanceDays = 0;
+        if (attendanceList != null) {
+            for (Attendance attendance : attendanceList) {
+                if (attendance.getStartTime() != null) {
+                    attendanceDays++;
+                }
+            }
+        }
+        
         // リクエスト属性にセット
         request.setAttribute("attendanceList", attendanceList);
         request.setAttribute("year", year);
         request.setAttribute("month", month);
+        request.setAttribute("attendanceDays", attendanceDays);
         
         // attendance_list.jspにフォワード
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/attendance_list.jsp");
