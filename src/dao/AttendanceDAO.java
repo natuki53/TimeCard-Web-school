@@ -124,13 +124,14 @@ public class AttendanceDAO {
         
         // データベースに接続して勤怠更新を実行
 		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
-            // 退勤時刻を更新するSQL文
-			String sql = "UPDATE attendance SET end_time = ? WHERE id = ?";
+            // 出勤時刻と退勤時刻を更新するSQL文
+			String sql = "UPDATE attendance SET start_time = ?, end_time = ? WHERE id = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
             // SQL文のプレースホルダーに値を設定
-			ps.setTime(1, java.sql.Time.valueOf(attendance.getEndTime()));
-			ps.setInt(2, attendance.getId());
+			ps.setTime(1, attendance.getStartTime() != null ? java.sql.Time.valueOf(attendance.getStartTime()) : null);
+			ps.setTime(2, attendance.getEndTime() != null ? java.sql.Time.valueOf(attendance.getEndTime()) : null);
+			ps.setInt(3, attendance.getId());
 			
             // SQL文を実行して更新処理を行う
 			int result = ps.executeUpdate();
