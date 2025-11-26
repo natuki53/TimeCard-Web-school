@@ -8,27 +8,36 @@
 /* ヘッダースタイル */
 .header {
     background-color: #2c3e50;
-    height: 70px;
+    height: 60px;
     width: 100%;
-    display: flex;
+    max-width: 100vw;
+    display: grid;
+    grid-template-columns: 200px 1fr 250px;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: fixed;
     top: 0;
     left: 0;
     z-index: 1000;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .header-logo {
-    height: 50px;
+    height: 45px;
     width: auto;
+    max-width: 180px;
+    object-fit: contain;
+    object-position: left center;
     transition: opacity 0.3s;
+    display: block;
 }
 
 .header a {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .header a:hover .header-logo {
@@ -38,7 +47,10 @@
 .header-nav {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
 
 .header-nav a {
@@ -46,34 +58,47 @@
     text-decoration: none;
     font-size: 16px;
     font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    padding: 12px 20px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
 }
 
 .header-nav a:hover {
-    background-color: #34495e;
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
 }
 
 .header-user {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 1rem;
     color: white;
     font-size: 14px;
+    justify-content: flex-end;
+    min-width: 0;
 }
 
 .header-user-name {
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    flex-shrink: 1;
 }
 
 .header-logout {
     color: #e74c3c !important;
     font-size: 14px;
-    padding: 6px 12px;
+    padding: 8px 16px;
     border: 1px solid #e74c3c;
-    border-radius: 4px;
-    transition: all 0.3s;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .header-logout:hover {
@@ -101,7 +126,7 @@
 .mobile-menu {
     display: none;
     position: fixed;
-    top: 70px;
+    top: 50px;
     left: 0;
     width: 100%;
     background-color: #2c3e50;
@@ -125,12 +150,14 @@
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
     .header {
-        height: 60px;
-        padding: 0 15px;
+        height: 50px;
+        grid-template-columns: 1fr auto;
+        padding: 0 1rem;
     }
     
     .header-logo {
-        height: 40px;
+        height: 35px;
+        max-width: 150px;
     }
     
     .header-nav {
@@ -143,6 +170,7 @@
     
     .hamburger {
         display: flex;
+        grid-column: 2;
     }
     
     .mobile-menu.active {
@@ -150,7 +178,7 @@
     }
     
     .mobile-menu {
-        top: 60px;
+        top: 50px;
     }
 }
 
@@ -159,6 +187,8 @@ body {
     background-color: #f5f5f5;
     color: #333;
     line-height: 1.6;
+    overflow-x: hidden;
+    min-width: 320px;
 }
 
 .container {
@@ -168,21 +198,26 @@ body {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-top: 90px; /* ヘッダー分のマージンを追加 */
+    margin-top: 70px; /* ヘッダー分のマージンを追加 */
 }
 
 /* ヘッダーがあるページ用のボディ調整 */
 body.with-header {
-    padding-top: 70px;
+    padding-top: 60px;
 }
 
 @media (max-width: 768px) {
     .container {
-        margin-top: 80px; /* モバイル用調整 */
+        margin-top: 65px; /* モバイル用調整 */
+        margin-bottom: 30px;
+        padding: 15px;
+        margin-left: 10px;
+        margin-right: 10px;
+        max-width: calc(100vw - 20px);
     }
     
     body.with-header {
-        padding-top: 60px;
+        padding-top: 50px;
     }
 }
 
