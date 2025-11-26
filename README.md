@@ -13,9 +13,12 @@
 ## 技術スタック
 
 - Java 11
-- Jakarta Servlet / JSP
-- MySQL 8.0
-- Maven
+- Jakarta Servlet 6.0.0
+- Jakarta JSP 3.1.0
+- JSTL 3.0.0
+- MySQL 8.0 (mysql-connector-j 8.0.33)
+- Maven 3.6+
+- JUnit 5.9.2 (テスト用)
 
 ## プロジェクト構成
 
