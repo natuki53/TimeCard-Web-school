@@ -7,7 +7,13 @@
     <title>ログイン - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
 </head>
-<body>
+<body class="with-header">
+    <!-- シンプルヘッダー（ロゴのみ） -->
+    <header class="header">
+        <a href="<%= request.getContextPath() %>/">
+            <img src="<%= request.getContextPath() %>/img/index.png" alt="CLOCK" class="header-logo">
+        </a>
+    </header>
     <div class="container">
         <h1>ログイン</h1>
         
