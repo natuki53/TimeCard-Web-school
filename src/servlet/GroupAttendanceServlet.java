@@ -97,13 +97,24 @@ public class GroupAttendanceServlet extends HttpServlet {
         AttendanceDAO attendanceDAO = new AttendanceDAO();
         Map<Integer, List<Attendance>> memberAttendances = new HashMap<>();
         
-        for (GroupMember member : members) {
-            List<Attendance> attendances = attendanceDAO.findByUserIdAndMonth(
-                member.getUserId(), 
+        if (isAdmin) {
+            // 管理者の場合：全メンバーの勤怠を取得
+            for (GroupMember member : members) {
+                List<Attendance> attendances = attendanceDAO.findByUserIdAndMonth(
+                    member.getUserId(), 
+                    targetYearMonth.getYear(), 
+                    targetYearMonth.getMonthValue()
+                );
+                memberAttendances.put(member.getUserId(), attendances);
+            }
+        } else {
+            // 一般メンバーの場合：自分の勤怠のみ取得
+            List<Attendance> myAttendances = attendanceDAO.findByUserIdAndMonth(
+                loginUser.getId(), 
                 targetYearMonth.getYear(), 
                 targetYearMonth.getMonthValue()
             );
-            memberAttendances.put(member.getUserId(), attendances);
+            memberAttendances.put(loginUser.getId(), myAttendances);
         }
         
         // 前月・次月のリンク用

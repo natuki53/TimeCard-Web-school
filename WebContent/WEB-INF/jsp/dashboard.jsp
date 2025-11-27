@@ -46,7 +46,7 @@
         <nav class="header-nav">
             <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
-            <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
+            <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         </nav>
         
         <div class="header-user">
@@ -66,7 +66,7 @@
     <div class="mobile-menu" id="mobileMenu">
         <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
-        <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
+        <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>
@@ -115,7 +115,7 @@
             <h2>クイックアクション</h2>
             <div class="quick-actions">
                 <a href="<%= request.getContextPath() %>/attendance" class="btn btn-primary">勤怠打刻</a>
-                <a href="<%= request.getContextPath() %>/attendance-list" class="btn btn-secondary">勤怠一覧</a>
+                <a href="<%= request.getContextPath() %>/attendance/list" class="btn btn-secondary">勤怠一覧</a>
                 <a href="<%= request.getContextPath() %>/group/create" class="btn btn-success">グループ作成</a>
             </div>
         </section>

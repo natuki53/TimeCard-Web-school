@@ -34,7 +34,7 @@
         <nav class="header-nav">
             <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
-            <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
+            <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         </nav>
         
         <div class="header-user">
@@ -54,7 +54,7 @@
     <div class="mobile-menu" id="mobileMenu">
         <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
-        <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
+        <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>

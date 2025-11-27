@@ -40,7 +40,7 @@
         <nav class="header-nav">
             <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
-            <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
+            <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         </nav>
         
         <div class="header-user">
@@ -60,7 +60,7 @@
     <div class="mobile-menu" id="mobileMenu">
         <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
-        <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
+        <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>
@@ -110,8 +110,16 @@
                             </h3>
                             
                             <% 
-                                List<Attendance> attendances = memberAttendances.get(member.getUserId());
-                                if (attendances != null && !attendances.isEmpty()) {
+                                // 管理者でない場合、他のメンバーの勤怠は表示しない
+                                if (!isAdmin && member.getUserId() != loginUser.getId()) {
+                            %>
+                                <div class="access-restricted">
+                                    <p class="restriction-message">管理者ではないため閲覧できません。</p>
+                                </div>
+                            <% 
+                                } else {
+                                    List<Attendance> attendances = memberAttendances.get(member.getUserId());
+                                    if (attendances != null && !attendances.isEmpty()) {
                             %>
                                 <table class="attendance-table">
                                     <thead>
@@ -168,11 +176,12 @@
                                     <span class="stat-item">部分: <%= partialDays %>日</span>
                                     <span class="stat-item">未出勤: <%= totalDays - completeDays - partialDays %>日</span>
                                 </div>
-                            <% } else { %>
-                                <div class="no-attendance">
-                                    <p>この月の勤怠記録はありません</p>
-                                </div>
-                            <% } %>
+                                    <% } else { %>
+                                        <div class="no-attendance">
+                                            <p>この月の勤怠記録はありません</p>
+                                        </div>
+                                    <% } %>
+                                <% } %>
                         </div>
                     <% } %>
                 </div>

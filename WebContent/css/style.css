@@ -851,6 +851,22 @@ a:hover {
     border-radius: 6px;
 }
 
+.access-restricted {
+    text-align: center;
+    padding: 2rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+.restriction-message {
+    color: #856404;
+    font-weight: 600;
+    margin: 0;
+    font-size: 1rem;
+}
+
 .member-stats {
     display: flex;
     gap: 1rem;
