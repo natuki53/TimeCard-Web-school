@@ -159,7 +159,11 @@
                                 <!-- 統計情報 -->
                                 <div class="member-stats">
                                     <% 
-                                        int totalDays = attendances.size();
+                                        // その月の日数を取得
+                                        int daysInMonth = targetYearMonth.lengthOfMonth();
+                                        
+                                        // 勤怠記録がある日数
+                                        int recordedDays = attendances.size();
                                         int completeDays = 0;
                                         int partialDays = 0;
                                         
@@ -170,11 +174,15 @@
                                                 partialDays++;
                                             }
                                         }
+                                        
+                                        // 未出勤日数 = その月の日数 - 勤怠記録がある日数
+                                        int absentDays = daysInMonth - recordedDays;
                                     %>
-                                    <span class="stat-item">出勤日数: <%= totalDays %>日</span>
+                                    <span class="stat-item">対象日数: <%= daysInMonth %>日</span>
+                                    <span class="stat-item">出勤記録: <%= recordedDays %>日</span>
                                     <span class="stat-item">完了: <%= completeDays %>日</span>
-                                    <span class="stat-item">部分: <%= partialDays %>日</span>
-                                    <span class="stat-item">未出勤: <%= totalDays - completeDays - partialDays %>日</span>
+                                    <span class="stat-item">部分出勤: <%= partialDays %>日</span>
+                                    <span class="stat-item">未出勤: <%= absentDays %>日</span>
                                 </div>
                                     <% } else { %>
                                         <div class="no-attendance">
