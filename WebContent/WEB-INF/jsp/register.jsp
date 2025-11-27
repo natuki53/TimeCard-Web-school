@@ -14,7 +14,7 @@
         <!-- TODO: エラーメッセージ表示 -->
         <% ErrorMessage errorMessage = (ErrorMessage)request.getAttribute("health");%>
         <% if(errorMessage != null){%>
-        	<%= errorMessage.get() %> 
+        	<p><%= errorMessage %> </p>
         <%} %>
         
         
