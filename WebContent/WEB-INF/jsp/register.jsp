@@ -12,7 +12,7 @@
         <h1>新規登録</h1>
         
         <!-- TODO: エラーメッセージ表示 -->
-        <% ErrorMessage errorMessage = (ErrorMessage)request.getAttribute("health");%>
+        <% ErrorMessage errorMessage = (ErrorMessage)request.getAttribute("errorMessage");%>
         <% if(errorMessage != null){%>
         	<p><%= errorMessage %> </p>
         <%} %>
