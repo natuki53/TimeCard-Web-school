@@ -871,6 +871,170 @@ a:hover {
     border: 1px solid #e0e0e0;
 }
 
+/* グループ詳細ページスタイル */
+.group-header {
+    border-left: 4px solid #3498db;
+    padding-left: 1rem;
+}
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.group-title h2 {
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+.user-role {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.admin-badge {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.member-badge {
+    background-color: #3498db;
+    color: white;
+}
+
+.group-description-section {
+    margin: 1.5rem 0;
+}
+
+.group-description-section h3 {
+    color: #34495e;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.group-description {
+    color: #7f8c8d;
+    line-height: 1.5;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+}
+
+.group-meta {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meta-label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.meta-value {
+    color: #7f8c8d;
+}
+
+.action-buttons-grid {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.member-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #fafafa;
+    transition: box-shadow 0.3s;
+}
+
+.member-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+}
+
+.member-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.detail-value {
+    font-size: 0.9rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.admin-info {
+    border-left: 4px solid #e74c3c;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.info-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+}
+
+.info-card h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.info-card p {
+    color: #7f8c8d;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
 /* レスポンシブ対応の追加 */
 @media (max-width: 768px) {
     .member-stats {
@@ -884,6 +1048,35 @@ a:hover {
     
     .admin-actions {
         text-align: center;
+    }
+    
+    .group-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .group-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons-grid {
+        flex-direction: column;
+    }
+    
+    .members-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
     }
 }
 

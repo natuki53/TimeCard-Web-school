@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,12 +11,16 @@ import java.util.List;
 
 import model.Group;
 import model.GroupMember;
-import util.DBUtil;
 
 /**
  * グループ関連のデータアクセスオブジェクト
  */
 public class GroupDAO {
+    
+    // データベース接続情報の定数定義
+    private final String JDBC_URL = "jdbc:mysql://localhost:3306/timecard_db?useSSL=false&serverTimezone=Asia/Tokyo&characterEncoding=UTF-8";
+    private final String DB_USER = "root";
+    private final String DB_PASS = "";
     
     /**
      * グループを作成する
@@ -25,7 +30,14 @@ public class GroupDAO {
     public Group createGroup(Group group) {
         String sql = "INSERT INTO groups (name, description, admin_user_id) VALUES (?, ?, ?)";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             stmt.setString(1, group.getName());
@@ -61,7 +73,14 @@ public class GroupDAO {
         List<Group> groups = new ArrayList<>();
         String sql = "SELECT * FROM groups WHERE admin_user_id = ? ORDER BY created_at DESC";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, adminUserId);
@@ -95,7 +114,14 @@ public class GroupDAO {
                     "INNER JOIN group_members gm ON g.id = gm.group_id " +
                     "WHERE gm.user_id = ? ORDER BY g.created_at DESC";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, userId);
@@ -126,7 +152,14 @@ public class GroupDAO {
     public Group findGroupById(int groupId) {
         String sql = "SELECT * FROM groups WHERE id = ?";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -158,7 +191,14 @@ public class GroupDAO {
     public boolean addGroupMember(int groupId, int userId) {
         String sql = "INSERT INTO group_members (group_id, user_id) VALUES (?, ?)";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -187,7 +227,14 @@ public class GroupDAO {
                     "INNER JOIN users u ON gm.user_id = u.id " +
                     "WHERE gm.group_id = ? ORDER BY gm.joined_at ASC";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -219,7 +266,14 @@ public class GroupDAO {
     public boolean removeGroupMember(int groupId, int userId) {
         String sql = "DELETE FROM group_members WHERE group_id = ? AND user_id = ?";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -242,7 +296,14 @@ public class GroupDAO {
     public boolean isGroupAdmin(int groupId, int userId) {
         String sql = "SELECT COUNT(*) FROM groups WHERE id = ? AND admin_user_id = ?";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -268,7 +329,14 @@ public class GroupDAO {
     public boolean isGroupMember(int groupId, int userId) {
         String sql = "SELECT COUNT(*) FROM group_members WHERE group_id = ? AND user_id = ?";
         
-        try (Connection conn = DBUtil.getConnection();
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);

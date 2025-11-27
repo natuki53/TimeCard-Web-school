@@ -38,14 +38,32 @@
             <img src="<%= request.getContextPath() %>/img/index.png" alt="CLOCK" class="header-logo">
         </a>
         <nav class="header-nav">
-            <a href="<%= request.getContextPath() %>/dashboard" class="nav-link">ダッシュボード</a>
-            <a href="<%= request.getContextPath() %>/attendance" class="nav-link">勤怠打刻</a>
-            <a href="<%= request.getContextPath() %>/attendance-list" class="nav-link">勤怠一覧</a>
-            <a href="<%= request.getContextPath() %>/logout" class="nav-link">ログアウト</a>
+            <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
+            <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
+            <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
         </nav>
-        <div class="user-info">
-            <span class="user-name"><%= loginUser.getName() %>さん</span>
+        
+        <div class="header-user">
+            <span class="header-user-name"><%= loginUser.getName() %>さん</span>
+            <a href="<%= request.getContextPath() %>/logout" class="header-logout">ログアウト</a>
         </div>
+        
+        <!-- ハンバーガーメニュー（モバイル用） -->
+        <div class="hamburger" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+    
+    <!-- モバイルメニュー -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
+        <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
+        <a href="<%= request.getContextPath() %>/attendance-list">勤怠一覧</a>
+        <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
+        <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
+    </div>
     </header>
 
     <div class="container">
@@ -170,5 +188,12 @@
             <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-secondary">ダッシュボードに戻る</a>
         </div>
     </div>
+
+    <script>
+        function toggleMobileMenu() {
+            var menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('show');
+        }
+    </script>
 </body>
 </html>

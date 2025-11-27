@@ -21,11 +21,12 @@
 <body class="with-header">
     <!-- ヘッダー -->
     <header class="header">
-        <a href="<%= request.getContextPath() %>/attendance">
+        <a href="<%= request.getContextPath() %>/dashboard">
             <img src="<%= request.getContextPath() %>/img/index.png" alt="CLOCK" class="header-logo">
         </a>
         
         <nav class="header-nav">
+            <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
             <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         </nav>
@@ -45,6 +46,7 @@
     
     <!-- モバイルメニュー -->
     <div class="mobile-menu" id="mobileMenu">
+        <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
         <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser != null ? loginUser.getName() + "さん" : "ゲスト" %></a>
