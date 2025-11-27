@@ -98,5 +98,89 @@ public class UserDAO {
         // 登録失敗の場合はfalseを返す
         return false;
     }
+    
+    /**
+     * ログインIDでユーザーを検索
+     * @param loginId ログインID
+     * @return 見つかったユーザー、見つからなければnull
+     */
+    public User findByLoginId(String loginId) {
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        // データベースに接続してユーザー検索を実行
+        try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+            // ログインIDでユーザーを検索するSQL文
+            String sql = "SELECT id, login_id, password_hash, name FROM users WHERE login_id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            // SQL文のプレースホルダーに値を設定
+            ps.setString(1, loginId);
+            
+            // SQL文を実行してユーザー情報を取得
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                // 検索結果からUserオブジェクトを作成
+                User user = new User();
+                user.setId(rs.getInt("id"));
+                user.setLoginId(rs.getString("login_id"));
+                user.setPasswordHash(rs.getString("password_hash"));
+                user.setName(rs.getString("name"));
+                return user;
+            }
+        } catch (SQLException e) {
+            // データベースエラーをコンソールに出力
+            e.printStackTrace();
+        }
+        
+        // ユーザーが見つからない場合はnullを返す
+        return null;
+    }
+    
+    /**
+     * ユーザーIDでユーザーを検索
+     * @param userId ユーザーID
+     * @return 見つかったユーザー、見つからなければnull
+     */
+    public User findById(int userId) {
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        // データベースに接続してユーザー検索を実行
+        try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+            // ユーザーIDでユーザーを検索するSQL文
+            String sql = "SELECT id, login_id, password_hash, name FROM users WHERE id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            // SQL文のプレースホルダーに値を設定
+            ps.setInt(1, userId);
+            
+            // SQL文を実行してユーザー情報を取得
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                // 検索結果からUserオブジェクトを作成
+                User user = new User();
+                user.setId(rs.getInt("id"));
+                user.setLoginId(rs.getString("login_id"));
+                user.setPasswordHash(rs.getString("password_hash"));
+                user.setName(rs.getString("name"));
+                return user;
+            }
+        } catch (SQLException e) {
+            // データベースエラーをコンソールに出力
+            e.printStackTrace();
+        }
+        
+        // ユーザーが見つからない場合はnullを返す
+        return null;
+    }
 }
 

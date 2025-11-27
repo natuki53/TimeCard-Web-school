@@ -51,8 +51,8 @@ public class LoginServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("loginUser", user);
             
-            // /attendanceにリダイレクト
-            response.sendRedirect(request.getContextPath() + "/attendance");
+            // /dashboardにリダイレクト
+            response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
             // ログイン失敗：エラーメッセージを設定してlogin.jspに戻す
             request.setAttribute("errorMessage", "ログインIDまたはパスワードが正しくありません。");

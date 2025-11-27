@@ -463,3 +463,514 @@ a:hover {
     color: #2c3e50;
 }
 
+/* ダッシュボードスタイル */
+.welcome-message {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.dashboard-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-section h2 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+}
+
+.dashboard-section h3 {
+    color: #34495e;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* 今日の勤怠状況 */
+.today-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.status-label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.status-value {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.status-value.no-record {
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* クイックアクション */
+.quick-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* グループ管理 */
+.group-category {
+    margin-bottom: 2rem;
+}
+
+.group-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.group-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #fafafa;
+    transition: box-shadow 0.3s;
+}
+
+.group-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.group-card.admin-group {
+    border-left: 4px solid #e74c3c;
+}
+
+.group-card.member-group {
+    border-left: 4px solid #3498db;
+}
+
+.group-info {
+    margin-bottom: 1rem;
+}
+
+.group-name {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.group-description {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.group-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.no-groups {
+    color: #7f8c8d;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+/* 最近の勤怠履歴 */
+.recent-attendance {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.no-records {
+    color: #7f8c8d;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+/* ボタンサイズバリエーション */
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #219a52;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+/* グループ管理スタイル */
+.group-info-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #3498db;
+}
+
+.group-info-section h2 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.group-info-section .group-description {
+    color: #7f8c8d;
+    line-height: 1.5;
+}
+
+.add-member-form .inline-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.add-member-form .inline-form label {
+    min-width: 150px;
+    font-weight: 600;
+}
+
+.add-member-form .inline-form input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+.help-text {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #17a2b8;
+}
+
+.help-text p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.action-buttons {
+    margin-bottom: 1rem;
+    text-align: right;
+}
+
+.members-table {
+    overflow-x: auto;
+}
+
+.role-admin {
+    background-color: #e74c3c;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.role-member {
+    background-color: #3498db;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* メッセージスタイル */
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #c3e6cb;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 1rem;
+}
+
+/* フォームスタイル */
+.form-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="password"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.info-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.info-box h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.info-box ul {
+    margin-left: 1.5rem;
+    color: #6c757d;
+}
+
+.info-box li {
+    margin-bottom: 0.5rem;
+}
+
+/* グループ勤怠確認スタイル */
+.admin-actions {
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
+.group-attendance-table {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.member-attendance-section {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: #fafafa;
+}
+
+.member-name {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.no-attendance {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+    font-style: italic;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+.member-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    padding: 0.5rem 1rem;
+    background-color: white;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    border: 1px solid #e0e0e0;
+}
+
+/* レスポンシブ対応の追加 */
+@media (max-width: 768px) {
+    .member-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .admin-actions {
+        text-align: center;
+    }
+}
+
+/* 勤怠一覧テーブル */
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-table th,
+.attendance-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.attendance-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.attendance-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.attendance-table .date-column {
+    width: 120px;
+}
+
+.attendance-table .time-column {
+    width: 100px;
+}
+
+.attendance-table .duration-column {
+    width: 100px;
+}
+
+/* 勤怠状況の色分け */
+.status-complete {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.status-incomplete {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.status-partial {
+    color: #f39c12;
+    font-weight: 600;
+}
+
+/* 空の状態表示 */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #7f8c8d;
+}
+
+.empty-state h3 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+/* レスポンシブ対応の追加 */
+@media (max-width: 768px) {
+    .today-status {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+    }
+    
+    .group-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .group-actions {
+        justify-content: center;
+    }
+}
+

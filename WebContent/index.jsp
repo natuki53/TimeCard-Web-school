@@ -4,8 +4,8 @@
     // ログイン済みかチェック
     User loginUser = (User) session.getAttribute("loginUser");
     if (loginUser != null) {
-        // ログイン済みなら勤怠打刻画面へリダイレクト
-        response.sendRedirect(request.getContextPath() + "/attendance");
+        // ログイン済みならダッシュボードへリダイレクト
+        response.sendRedirect(request.getContextPath() + "/dashboard");
         return;
     }
 %>
