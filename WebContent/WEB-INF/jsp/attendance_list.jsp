@@ -15,15 +15,38 @@
         <h1>勤怠一覧</h1>
         
         <!-- TODO: ログインユーザー名を表示 -->
-        
+        <% User user = (User)session.getAttribute("user");%>
+        <% if(user != null) {%>
+          <p>ユーザー：<%= user.getName(); %>さん</p>
+        <% } %>
+        <% 
+          Integer year = (Integer)request.getAttribute("year"); 
+          Integer month = (Integer)request.getAttribute("month");
+         %>
         <div class="month-navigation">
             <!-- TODO: 前の月へのリンク -->
-            <a href="?year=<!-- TODO: 前の年 -->&month=<!-- TODO: 前の月 -->">前の月</a>
+            <%
+              int prevYear = year;
+              int prevMonth = month - 1;
+              if (prevMonth == 0){
+                prevMonth = 12;
+                prevYear = prevYear-1;
+               }
+             %>
+            <a href="?year=<%= prevYear %>&month=<%= prevMonth%> ">前の月</a>
             
             <span class="current-month"><!-- TODO: YYYY年MM月を表示 --></span>
             
             <!-- TODO: 次の月へのリンク -->
-            <a href="?year=<!-- TODO: 次の年 -->&month=<!-- TODO: 次の月 -->">次の月</a>
+            <%
+              int nextYear = year;
+              int nextMonth = month + 1;
+              if (prevMonth == 13){
+                nextMonth = 1;
+                nextYear = nextYear + 1;
+               }
+             %>
+            <a href="?year=<%= nextYear %>&month=<%= nextMonth%>">次の月</a>
         </div>
         
         <table>
