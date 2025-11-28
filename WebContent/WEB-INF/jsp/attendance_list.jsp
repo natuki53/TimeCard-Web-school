@@ -34,8 +34,8 @@
                }
              %>
             <a href="?year=<%= prevYear %>&month=<%= prevMonth%> ">前の月</a>
-            
-            <span class="current-month"><!-- TODO: YYYY年MM月を表示 --></span>
+            <!-- TODO: YYYY年MM月を表示 -->
+            <span class="current-month"><%= year %>年<%= month %>月</span>
             
             <!-- TODO: 次の月へのリンク -->
             <%
@@ -66,11 +66,23 @@
                     <td>18:00</td>
                 </tr>
                 -->
+                <% 
+                  List<Attendance> attendanceList =(List<Attendance>)request.getAttribute("attendanceList");
+                  int WorkCount = 0:
+                %> 
+                <%for(Attendance a:attendanceList){%>
+                    <tr>
+                      <td><%= a.getWorkDate();%></td>
+                      <td><%= a.getStartTime(); %></td>
+                      <td><%= a.getEndTime(); %></td>
+                    </tr>
+                    WorkCount = WorkCount+1;
+                <%} %>
             </tbody>
         </table>
         
         <div class="stats">
-            <p>出勤日数: <!-- TODO: 出勤日数を表示 --> 日</p>
+            <p>出勤日数: <!-- TODO: 出勤日数を表示 --><%= WorkCount %> 日</p>
         </div>
         
         <div class="button-group">
