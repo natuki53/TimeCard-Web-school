@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import model.Attendance;
@@ -100,6 +101,28 @@ public class AttendanceDAO {
      */
     public boolean update(Attendance attendance) {
         // TODO: 実装
+    	try {
+			Class.forName("com.mysql.jdbc.Driver");
+		}catch(ClassNotFoundException e) {
+			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+		}
+		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+			String sql = "UPDATE attendance SET start_time = ?, end_time = ? WHERE id = ?";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			
+			ps.setTime(1, java.sql.Time.valueOf(attendance.getStartTime()));
+			ps.setTime(2, java.sql.Time.valueOf(attendance.getEndTime()));
+			ps.setInt(3, attendance.getId());
+			
+			int result  = ps.executeUpdate();
+			if(result > 0) {
+				return true;
+			}
+			
+		}catch (SQLException e) {
+			e.printStackTrace();
+			
+		}
         return false;
     }
     
@@ -112,7 +135,32 @@ public class AttendanceDAO {
      */
     public List<Attendance> findByUserIdAndMonth(int userId, int year, int month) {
         // TODO: 実装
-        return null;
+    	List<Attendance> attendanceList = new ArrayList<>();
+    	try {
+			Class.forName("com.mysql.jdbc.Driver");
+		}catch (ClassNotFoundException e) {
+			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+		}
+		try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)){
+			
+			String sql = "SELECT id, user_id, work_date, start_time, end_time FROM attendance WHERE user_id ORDER BY ID DESC";
+			PreparedStatement pStmt = conn.prepareStatement(sql);
+			
+			ResultSet rs = pStmt.executeQuery();
+			
+			while(rs.next()) {
+				Attendance attendance = new Attendance();
+				attendance.setId(rs.getInt("id"));
+				attendance.setUserId(rs.getInt("user_id"));
+				attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
+				attendance.setStartTime(rs.getTime("start_time").toLocalTime());
+				attendance.setEndTime(rs.getTime("end_time").toLocalTime());
+				attendanceList.add(attendance);
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+        return attendanceList;
     }
 }
 
