@@ -15,10 +15,14 @@
         
         <!-- TODO: ログインユーザー名を表示 -->
         <!-- TODO: 今日の日付を表示 -->
+        <div class="user-info">
+        <p><strong><%= loginUser != null ? loginUser.getName(): "ゲスト"%>さん</strong></p>
+        <p>今日の日付:<strong><%= todeyStr %></strong></p>
+        </div>
         
         <div class="attendance-info">
-            <p>出勤時刻: <span class="time-display"><!-- TODO: 出勤時刻を表示 -->--:--</span></p>
-            <p>退勤時刻: <span class="time-display"><!-- TODO: 退勤時刻を表示 -->--:--</span></p>
+            <p>出勤時刻: <span class="time-display"><!-- TODO: 出勤時刻を表示 --><%= todeyAttendance != null && todeyAttendance.getStartTime() != null ? todeyAttendance.getStartTime().toString() : --:--%></span></p>
+            <p>退勤時刻: <span class="time-display"><!-- TODO: 退勤時刻を表示 --><%= todeyAttendance != null && todeyAttendance.getEndTime() != null ? todeyAttendance.getEndTime().toString() : --:--</span></p>
         </div>
         
         <div class="attendance-buttons">
@@ -26,12 +30,14 @@
             <form method="POST" action="<%= request.getContextPath() %>/attendance" style="display: inline;">
                 <input type="hidden" name="action" value="start">
                 <button type="submit" class="btn btn-success">出勤</button>
+                <% hasStarted ? 出勤済み : 出勤 %>
             </form>
             
             <!-- TODO: 退勤ボタン（出勤済み・退勤未済みのときのみ有効） -->
             <form method="POST" action="<%= request.getContextPath() %>/attendance" style="display: inline;">
                 <input type="hidden" name="action" value="end">
                 <button type="submit" class="btn btn-danger">退勤</button>
+                <% hasEnded ? 退勤済み : 退勤 %>
             </form>
         </div>
         
