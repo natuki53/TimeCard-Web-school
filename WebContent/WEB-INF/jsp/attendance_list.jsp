@@ -69,15 +69,15 @@
                 <% 
                   List<Attendance> attendanceList =(List<Attendance>)request.getAttribute("attendanceList");
                   int WorkCount = 0:
-                  for(Attendance a:attendanceList){%>
+                %> 
+                <%for(Attendance a:attendanceList){%>
                     <tr>
                       <td><%= a.getWorkDate();%></td>
                       <td><%= a.getStartTime(); %></td>
                       <td><%= a.getEndTime(); %></td>
                     </tr>
                     WorkCount = WorkCount+1;
-                   <%} 
-                 %>
+                <%} %>
             </tbody>
         </table>
         
