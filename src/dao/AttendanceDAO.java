@@ -51,7 +51,7 @@ public class AttendanceDAO {
 				if(rs.getTime("end_time") != null) {
 					attendance.setEndTime(rs.getTime("end_time").toLocalTime());
 				}
-				return attendance;;
+				return attendance;
 			}
 		}catch (SQLException e) {
 			e.printStackTrace();
@@ -78,9 +78,13 @@ public class AttendanceDAO {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
 			ps.setInt(1, attendance.getUserId());
-			ps.setDate(2, attendance.getWorkDate());
-			ps.setTime(3, attendance.getStartTime());
+			ps.setDate(2, Date.valueOf(attendance.getWorkDate()));
+			ps.setTime(3, java.sql.Time.valueOf(attendance.getStartTime()));
 			
+			int result = ps.executeUpdate();
+			if(result > 0) {
+				return true;
+			}
 			
 		}catch (SQLException e) {
 			e.printStackTrace();
