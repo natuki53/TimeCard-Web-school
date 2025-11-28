@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +17,11 @@ import model.Attendance;
  */
 public class AttendanceDAO {
     
+    // データベース接続情報の定数定義
 	private final String JDBC_URL = "jdbc:mysql://localhost:3306/timecard_db?useSSL=false&serverTimezone=Asia/Tokyo&characterEncoding=UTF-8";
 	private final String DB_USER = "root";
-	private final String DB_PASS = "root";
+	private final String DB_PASS = "";
+    
     /**
      * ユーザーIDと日付で勤怠を検索
      * @param userId ユーザーID
@@ -26,39 +29,47 @@ public class AttendanceDAO {
      * @return 見つかった勤怠、見つからなければnull
      */
     public Attendance findByUserIdAndDate(int userId, Date date) {
-        // TODO: 実装
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
+        // JDBCドライバをロード
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
+        
+        // データベースに接続して勤怠検索を実行
 		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+            // ユーザーIDと日付で勤怠を検索するSQL文
 			String sql = "SELECT id, user_id, work_date, start_time, end_time FROM attendance WHERE user_id = ? AND work_date = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
-			//sql文の?に入れるものを定義
+            
+			// SQL文のプレースホルダーに値を設定
 			ps.setInt(1, userId);
 			ps.setDate(2, date);
 			
-			//sql文で見つかったidを返す
+			// SQL文を実行して勤怠情報を取得
 			ResultSet rs = ps.executeQuery();
 			if(rs.next()) {
+                // 検索結果からAttendanceオブジェクトを作成
 				Attendance attendance = new Attendance();
 				attendance.setId(rs.getInt("id"));
 				attendance.setUserId(rs.getInt("user_id"));
 				attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
-				if(rs.getTime("start_time") != null) {
+                // 開始時刻がnullでない場合のみ設定
+				if (rs.getTime("start_time") != null) {
 					attendance.setStartTime(rs.getTime("start_time").toLocalTime());
 				}
-				if(rs.getTime("end_time") != null) {
+                // 終了時刻がnullでない場合のみ設定
+				if (rs.getTime("end_time") != null) {
 					attendance.setEndTime(rs.getTime("end_time").toLocalTime());
 				}
 				return attendance;
 			}
 		}catch (SQLException e) {
+            // データベースエラーをコンソールに出力
 			e.printStackTrace();
-			
 		}
 		
+        // 勤怠が見つからない場合はnullを返す
         return null;
     }
     
@@ -68,29 +79,34 @@ public class AttendanceDAO {
      * @return 登録成功したらtrue
      */
     public boolean insert(Attendance attendance) {
-        // TODO: 実装
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
+        // JDBCドライバをロード
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
+        
+        // データベースに接続して勤怠登録を実行
 		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+            // 新規勤怠を登録するSQL文（出勤時刻のみ登録）
 			String sql = "INSERT INTO attendance(user_id, work_date, start_time) VALUES(?, ?, ?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
+            // SQL文のプレースホルダーに値を設定
 			ps.setInt(1, attendance.getUserId());
 			ps.setDate(2, Date.valueOf(attendance.getWorkDate()));
 			ps.setTime(3, java.sql.Time.valueOf(attendance.getStartTime()));
 			
+            // SQL文を実行して登録処理を行う
 			int result = ps.executeUpdate();
-			if(result > 0) {
-				return true;
-			}
-			
+            // 1行以上更新されれば登録成功
+			return result > 0;
 		}catch (SQLException e) {
+            // データベースエラーをコンソールに出力
 			e.printStackTrace();
-			
 		}
+        
+        // 登録失敗の場合はfalseを返す
         return false;
     }
     
@@ -100,66 +116,144 @@ public class AttendanceDAO {
      * @return 更新成功したらtrue
      */
     public boolean update(Attendance attendance) {
-        // TODO: 実装
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
+        // JDBCドライバをロード
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
+        
+        // データベースに接続して勤怠更新を実行
 		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+            // 出勤時刻と退勤時刻を更新するSQL文
 			String sql = "UPDATE attendance SET start_time = ?, end_time = ? WHERE id = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			ps.setTime(1, java.sql.Time.valueOf(attendance.getStartTime()));
-			ps.setTime(2, java.sql.Time.valueOf(attendance.getEndTime()));
+            // SQL文のプレースホルダーに値を設定
+			ps.setTime(1, attendance.getStartTime() != null ? java.sql.Time.valueOf(attendance.getStartTime()) : null);
+			ps.setTime(2, attendance.getEndTime() != null ? java.sql.Time.valueOf(attendance.getEndTime()) : null);
 			ps.setInt(3, attendance.getId());
 			
-			int result  = ps.executeUpdate();
-			if(result > 0) {
-				return true;
-			}
-			
+            // SQL文を実行して更新処理を行う
+			int result = ps.executeUpdate();
+            // 1行以上更新されれば更新成功
+			return result > 0;
 		}catch (SQLException e) {
+            // データベースエラーをコンソールに出力
 			e.printStackTrace();
-			
 		}
+        
+        // 更新失敗の場合はfalseを返す
         return false;
     }
     
+    
     /**
-     * ユーザーIDと年月で勤怠一覧を取得
+     * ユーザーIDと日付で勤怠を検索（LocalDate版）
+     * @param userId ユーザーID
+     * @param date 日付
+     * @return 見つかった勤怠、見つからなければnull
+     */
+    public Attendance findByUserIdAndDate(int userId, LocalDate date) {
+        return findByUserIdAndDate(userId, Date.valueOf(date));
+    }
+    
+    /**
+     * ユーザーの最近の勤怠履歴を取得
+     * @param userId ユーザーID
+     * @param limit 取得件数
+     * @return 勤怠履歴リスト
+     */
+    public List<Attendance> findRecentByUserId(int userId, int limit) {
+        List<Attendance> attendanceList = new ArrayList<>();
+        
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        // データベースに接続して勤怠履歴を取得
+        try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+            // 最近の勤怠履歴を取得するSQL文（日付降順）
+            String sql = "SELECT id, user_id, work_date, start_time, end_time " +
+                        "FROM attendance WHERE user_id = ? " +
+                        "ORDER BY work_date DESC LIMIT ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            // SQL文のプレースホルダーに値を設定
+            ps.setInt(1, userId);
+            ps.setInt(2, limit);
+            
+            // SQL文を実行して勤怠履歴を取得
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                // 検索結果からAttendanceオブジェクトを作成
+                Attendance attendance = new Attendance();
+                attendance.setId(rs.getInt("id"));
+                attendance.setUserId(rs.getInt("user_id"));
+                attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
+                attendance.setStartTime(rs.getTime("start_time") != null ? rs.getTime("start_time").toLocalTime() : null);
+                attendance.setEndTime(rs.getTime("end_time") != null ? rs.getTime("end_time").toLocalTime() : null);
+                attendanceList.add(attendance);
+            }
+        } catch (SQLException e) {
+            // データベースエラーをコンソールに出力
+            e.printStackTrace();
+        }
+        
+        return attendanceList;
+    }
+    
+    /**
+     * ユーザーの指定月の勤怠履歴を取得
      * @param userId ユーザーID
      * @param year 年
      * @param month 月
-     * @return 勤怠一覧
+     * @return 勤怠履歴リスト
      */
     public List<Attendance> findByUserIdAndMonth(int userId, int year, int month) {
-        // TODO: 実装
-    	List<Attendance> attendanceList = new ArrayList<>();
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
-		}catch (ClassNotFoundException e) {
-			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
-		}
-		try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)){
-			
-			String sql = "SELECT id, user_id, work_date, start_time, end_time FROM attendance WHERE user_id ORDER BY ID DESC";
-			PreparedStatement pStmt = conn.prepareStatement(sql);
-			
-			ResultSet rs = pStmt.executeQuery();
-			
-			while(rs.next()) {
-				Attendance attendance = new Attendance();
-				attendance.setId(rs.getInt("id"));
-				attendance.setUserId(rs.getInt("user_id"));
-				attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
-				attendance.setStartTime(rs.getTime("start_time").toLocalTime());
-				attendance.setEndTime(rs.getTime("end_time").toLocalTime());
-				attendanceList.add(attendance);
-			}
-		}catch(SQLException e) {
-			e.printStackTrace();
-		}
+        List<Attendance> attendanceList = new ArrayList<>();
+        
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+        
+        // データベースに接続して勤怠履歴を取得
+        try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+            // 指定月の勤怠履歴を取得するSQL文
+            String sql = "SELECT id, user_id, work_date, start_time, end_time " +
+                        "FROM attendance WHERE user_id = ? " +
+                        "AND YEAR(work_date) = ? AND MONTH(work_date) = ? " +
+                        "ORDER BY work_date ASC";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            // SQL文のプレースホルダーに値を設定
+            ps.setInt(1, userId);
+            ps.setInt(2, year);
+            ps.setInt(3, month);
+            
+            // SQL文を実行して勤怠履歴を取得
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                // 検索結果からAttendanceオブジェクトを作成
+                Attendance attendance = new Attendance();
+                attendance.setId(rs.getInt("id"));
+                attendance.setUserId(rs.getInt("user_id"));
+                attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
+                attendance.setStartTime(rs.getTime("start_time") != null ? rs.getTime("start_time").toLocalTime() : null);
+                attendance.setEndTime(rs.getTime("end_time") != null ? rs.getTime("end_time").toLocalTime() : null);
+                attendanceList.add(attendance);
+            }
+        } catch (SQLException e) {
+            // データベースエラーをコンソールに出力
+            e.printStackTrace();
+        }
+        
         return attendanceList;
     }
 }
