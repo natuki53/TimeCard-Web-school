@@ -12,7 +12,9 @@
         <h1>ログイン</h1>
         
         <!-- TODO: エラーメッセージ表示 -->
-        
+        <p style="color: red;">
+            ${errorMessage}
+            </p>
         <form method="POST" action="<%= request.getContextPath() %>/login">
             <div class="form-group">
                 <label for="loginId">ログインID</label>
