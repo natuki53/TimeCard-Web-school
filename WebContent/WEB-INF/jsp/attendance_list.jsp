@@ -73,7 +73,7 @@
             <%
               int nextYear = year;
               int nextMonth = month + 1;
-              if (prevMonth == 13){
+              if (nextMonth == 13){
                 nextMonth = 1;
                 nextYear = nextYear + 1;
                }
