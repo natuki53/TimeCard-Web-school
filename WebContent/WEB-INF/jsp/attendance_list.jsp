@@ -2,11 +2,9 @@
 <%@ page import="model.User" %>
 <%@ page import="model.Attendance" %>
 <%@ page import="java.util.List" %>
-<!-- 間違い: LocalDateとDateTimeFormatterのimportが不足している -->
-<!-- 正しい: 
 <%@ page import="java.time.LocalDate" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
--->
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -21,23 +19,23 @@
         
         <!-- TODO: ログインユーザー名を表示 -->
         <!-- 間違い: セミコロンが余分（JSP式では不要） -->
-        <!-- 正しい: <%= user.getName() %> -->
+        <!-- 正しい: <%= user.getName();%> -->
         <% User user = (User)session.getAttribute("user");%>
         <% if(user != null) {%>
-          <p>ユーザー：<%= user.getName(); %>さん</p>
+          <p>ユーザー：<%= user.getName();%>さん</p>
         <% } %>
         <% 
           Integer year = (Integer)request.getAttribute("year"); 
           Integer month = (Integer)request.getAttribute("month");
           // 間違い: yearとmonthがnullの場合の処理がない（NullPointerExceptionが発生する可能性がある）
           // 正しい: 以下のようにnullチェックとデフォルト値の設定が必要
-          /*
+          
           if (year == null || month == null) {
               LocalDate now = LocalDate.now();
               year = now.getYear();
               month = now.getMonthValue();
           }
-          */
+          
          %>
         <div class="month-navigation">
             <!-- TODO: 前の月へのリンク -->
@@ -105,7 +103,6 @@
                   // 間違い: getWorkDate()のフォーマット処理がない
                   // 間違い: nullチェックがない
                   // 正しい: 
-                  /*
                   if (attendanceList != null && !attendanceList.isEmpty()) {
                       DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                       for (Attendance attendance : attendanceList) {
@@ -124,20 +121,22 @@
                   </tr>
                   <%
                   }
-                  */
                   int WorkCount = 0:
+                  WorkCount = WorkCount + 1;
                 %> 
+                <%-- 
                 <%for(Attendance a:attendanceList){%>
                     <tr>
                       <!-- 間違い: セミコロンが余分（JSP式では不要） -->
                       <!-- 間違い: フォーマット処理がない -->
-                      <td><%= a.getWorkDate();%></td>
-                      <td><%= a.getStartTime(); %></td>
-                      <td><%= a.getEndTime(); %></td>
+                      <td><%= a.getWorkDate()%></td>
+                      <td><%= a.getStartTime() %></td>
+                      <td><%= a.getEndTime() %></td>
                     </tr>
                     <!-- 間違い: この行はJSPスクリプトレットの外にある（構文エラー） -->
-                    WorkCount = WorkCount+1;
+                     WorkCount = WorkCount+1;
                 <%} %>
+                --%>
             </tbody>
         </table>
         
