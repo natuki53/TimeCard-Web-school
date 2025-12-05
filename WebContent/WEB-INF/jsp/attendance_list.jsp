@@ -121,7 +121,7 @@
                   </tr>
                   <%
                   }
-                  int WorkCount = 0:
+                  int WorkCount = 0;
                   WorkCount = WorkCount + 1;
                 %> 
                 <%-- 
