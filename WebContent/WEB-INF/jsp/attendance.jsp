@@ -41,11 +41,19 @@
             <!-- 間違い: todeyAttendance (タイポ) -->
             <!-- 間違い: --:-- が文字列として引用符で囲まれていない -->
             <!-- 正しい: <%= todayAttendance != null && todayAttendance.getStartTime() != null ? todayAttendance.getStartTime().toString() : "--:--" %> -->
+<<<<<<< HEAD
             <p>出勤時刻: <span class="time-display"><!-- TODO: 出勤時刻を表示 --><%= todeyAttendance != null && todeyAttendance.getStartTime() != null ? todeyAttendance.getStartTime().toString() : "--:--" %></span></p>
             <!-- 間違い: todeyAttendance (タイポ) -->
             <!-- 間違い: --:-- が文字列として引用符で囲まれていない -->
             <!-- 正しい: <%= todayAttendance != null && todayAttendance.getEndTime() != null ? todayAttendance.getEndTime().toString() : "--:--" %> -->
             <p>退勤時刻: <span class="time-display"><!-- TODO: 退勤時刻を表示 --><%= todeyAttendance != null && todeyAttendance.getEndTime() != null ? todeyAttendance.getEndTime().toString() : "--:--" %></span></p>
+=======
+            <p>出勤時刻: <span class="time-display"><!-- TODO: 出勤時刻を表示 --><%= todayAttendance != null && todayAttendance.getStartTime() != null ? todayAttendance.getStartTime().toString() : "--:--"%></span></p>
+            <!-- 間違い: todeyAttendance (タイポ) -->
+            <!-- 間違い: --:-- が文字列として引用符で囲まれていない -->
+            <!-- 正しい: <%= todayAttendance != null && todayAttendance.getEndTime() != null ? todayAttendance.getEndTime().toString() : "--:--" %> -->
+            <p>退勤時刻: <span class="time-display"><!-- TODO: 退勤時刻を表示 --><%= todayAttendance != null && todayAttendance.getEndTime() != null ? todayAttendance.getEndTime().toString() : "--:--"%></span></p>
+>>>>>>> c65f5f7b8476001933e9352a56a0e0944df891b1
         </div>
         
         <div class="attendance-buttons">
@@ -82,7 +90,8 @@
             -->
             <form method="POST" action="<%= request.getContextPath() %>/attendance" style="display: inline;">
                 <input type="hidden" name="action" value="end">
-                <button type="submit" class="btn btn-danger" <%= (!hasStaared) || hasEnded ? "disabled" : "" %>>
+                <!-- 間違い: タイポ hasStaared → hasStarted -->
+                <button type="submit" class="btn btn-danger" <%= (!hasStarted) || hasEnded ? "disabled" : "" %>>
                 <%= hasEnded ? "退勤済み" : "退勤" %>
                 </button>
             </form>
