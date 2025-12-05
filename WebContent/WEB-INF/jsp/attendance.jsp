@@ -31,7 +31,7 @@
         <div class="user-info">
         <!-- 間違い: スペースが不足している -->
         <!-- 正しい: <p><strong><%= loginUser != null ? loginUser.getName() : "ゲスト" %>さん</strong></p> -->
-        <p><strong><%= loginUser != null ? loginUser.getName(): "ゲスト" %>さん</strong></p>
+        <p><strong><%= loginUser != null ? loginUser.getName() : "ゲスト" %>さん</strong></p>
         <!-- 間違い: todeyStr (タイポ) -->
         <!-- 正しい: todayStr -->
         <p>今日の日付:<strong><%= todayStr %></strong></p>
@@ -54,7 +54,7 @@
       		  boolean hasEnded = todayAttendance != null && todayAttendance.getEndTime() != null;
    			 %>
             <!-- TODO: 出勤ボタン（未出勤のときのみ有効） -->
-            <!-- 間違い: ボタンのdisabled属性が実装されていない、三項演算子の構文が間違っている（文字列が引用符で囲まれていない） -->
+            <!-- 間違い: ボタンのdisabled属性が実装されていない、三項演算子の構文が間違っている（文字列が引用符で囲まれていない） -->	
             <!-- 正しい: 
             <form method="POST" action="<%= request.getContextPath() %>/attendance" style="display: inline;">
                 <input type="hidden" name="action" value="start">
