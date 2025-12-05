@@ -41,11 +41,11 @@
             <!-- 間違い: todeyAttendance (タイポ) -->
             <!-- 間違い: --:-- が文字列として引用符で囲まれていない -->
             <!-- 正しい: <%= todayAttendance != null && todayAttendance.getStartTime() != null ? todayAttendance.getStartTime().toString() : "--:--" %> -->
-            <p>出勤時刻: <span class="time-display"><!-- TODO: 出勤時刻を表示 --><%= todeyAttendance != null && todeyAttendance.getStartTime() != null ? todeyAttendance.getStartTime().toString() : "--:--" %></span></p>
+            <p>出勤時刻: <span class="time-display"><!-- TODO: 出勤時刻を表示 --><%= todayAttendance != null && todeyAttendance.getStartTime() != null ? todeyAttendance.getStartTime().toString() : "--:--" %></span></p>
             <!-- 間違い: todeyAttendance (タイポ) -->
             <!-- 間違い: --:-- が文字列として引用符で囲まれていない -->
             <!-- 正しい: <%= todayAttendance != null && todayAttendance.getEndTime() != null ? todayAttendance.getEndTime().toString() : "--:--" %> -->
-            <p>退勤時刻: <span class="time-display"><!-- TODO: 退勤時刻を表示 --><%= todeyAttendance != null && todeyAttendance.getEndTime() != null ? todeyAttendance.getEndTime().toString() : "--:--" %></span></p>
+            <p>退勤時刻: <span class="time-display"><!-- TODO: 退勤時刻を表示 --><%= todayAttendance != null && todeyAttendance.getEndTime() != null ? todeyAttendance.getEndTime().toString() : "--:--" %></span></p>
         </div>
         
         <div class="attendance-buttons">
