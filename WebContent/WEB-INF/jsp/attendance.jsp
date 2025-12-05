@@ -83,7 +83,7 @@
             <form method="POST" action="<%= request.getContextPath() %>/attendance" style="display: inline;">
                 <input type="hidden" name="action" value="end">
                 <!-- 間違い: タイポ hasStaared → hasStarted -->
-                <button type="submit" class="btn btn-danger" <%= (!hasStarted) || hasEnded ? "disabled" : "" %>>
+                <button type="submit" class="btn btn-danger" <%= (!hasStarted || hasEnded) ? "disabled" : "" %>>
                 <%= hasEnded ? "退勤済み" : "退勤" %>
                 </button>
             </form>
