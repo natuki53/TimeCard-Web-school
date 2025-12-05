@@ -6,10 +6,10 @@
 <%
     // 間違い: session.getAttribute("loginUser")
     // 正しい: session.getAttribute("user") // サーブレットで"user"として設定されているため
-    User loginUser = (User) session.getAttribute("loginUser");
+    User loginUser = (User) session.getAttribute("user");
     // 間違い: request.getAttribute("todayAttendance")
     // 正しい: request.getAttribute("attendance") // サーブレットで"attendance"として設定されているため
-    Attendance todayAttendance = (Attendance) request.getAttribute("todayAttendance");
+    Attendance todayAttendance = (Attendance) request.getAttribute("attendanc");
     LocalDate today = LocalDate.now();
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
     String todayStr = today.format(dateFormatter);
