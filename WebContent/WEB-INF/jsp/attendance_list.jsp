@@ -19,11 +19,11 @@
         
         <!-- TODO: ログインユーザー名を表示 -->
         <!-- 間違い: セミコロンが余分（JSP式では不要） -->
-        <!-- 正しい: <%= user.getName();%> -->
+        <!-- 正しい: <%= user.getName()%> -->
         <% User user = (User)session.getAttribute("user");%>
         <% 
           if(user != null) {%>
-          <p>ユーザー：<%= user.getName();%>さん</p>
+          <p>ユーザー：<%= user.getName()%>さん</p>
          <% }
          %> 
  
