@@ -21,9 +21,12 @@
         <!-- 間違い: セミコロンが余分（JSP式では不要） -->
         <!-- 正しい: <%= user.getName();%> -->
         <% User user = (User)session.getAttribute("user");%>
-        <% if(user != null) {%>
-          <p>ユーザー：<%= user.getName()%>さん</p>
-        <% } %>
+        <% 
+          if(user != null) {%>
+          <p>ユーザー：<%= user.getName();%>さん</p>
+         <% }
+         %> 
+ 
         <% 
           Integer year = (Integer)request.getAttribute("year"); 
           Integer month = (Integer)request.getAttribute("month");
