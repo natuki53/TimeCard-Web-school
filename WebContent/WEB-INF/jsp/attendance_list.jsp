@@ -19,7 +19,7 @@
         
         <!-- TODO: ログインユーザー名を表示 -->
         <!-- 間違い: セミコロンが余分（JSP式では不要） -->
-        <!-- 正しい: <%= user.getName()%> -->
+        
         <% User user = (User)session.getAttribute("user");%>
         <% 
           if(user != null) {%>
@@ -56,21 +56,7 @@
             
             <!-- TODO: 次の月へのリンク -->
             <!-- 間違い: prevMonth == 13 のチェックが間違っている（nextMonth == 13 であるべき） -->
-            <!-- 正しい: 
-            <%
-              int nextYear = year;
-              int nextMonth = month + 1;
-              if (nextMonth == 13){
-                nextMonth = 1;
-                nextYear = nextYear + 1;
-              }
-            %>
-            または、LocalDateを使用する方が安全:
-            <%
-              LocalDate currentMonth = LocalDate.of(year, month, 1);
-              LocalDate nextMonth = currentMonth.plusMonths(1);
-            %>
-            -->
+            
             <%
               int nextYear = year;
               int nextMonth = month + 1;
@@ -127,19 +113,7 @@
                   int WorkCount = 0;
                   WorkCount = WorkCount + 1;
                 %> 
-                <%-- 
-                <%for(Attendance a:attendanceList){%>
-                    <tr>
-                      <!-- 間違い: セミコロンが余分（JSP式では不要） -->
-                      <!-- 間違い: フォーマット処理がない -->
-                      <td><%= a.getWorkDate()%></td>
-                      <td><%= a.getStartTime() %></td>
-                      <td><%= a.getEndTime() %></td>
-                    </tr>
-                    <!-- 間違い: この行はJSPスクリプトレットの外にある（構文エラー） -->
-                     WorkCount = WorkCount+1;
-                <%} %>
-                --%>
+                
             </tbody>
         </table>
         
