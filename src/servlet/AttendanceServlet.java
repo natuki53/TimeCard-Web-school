@@ -1,5 +1,10 @@
 package servlet;
 
+import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -7,10 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.time.LocalTime;
+
 import dao.AttendanceDAO;
 import model.Attendance;
 import model.User;
