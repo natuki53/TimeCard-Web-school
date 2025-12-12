@@ -7,10 +7,11 @@
     
     User loginUser = (User) session.getAttribute("user");
     
-    Attendance todayAttendance = (Attendance) request.getAttribute("attendanc");
+    Attendance todayAttendance = (Attendance) request.getAttribute("attendance");
     LocalDate today = LocalDate.now();
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
     String todayStr = today.format(dateFormatter);
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -34,9 +35,10 @@
         
         <div class="attendance-info">
             
-            <p>出勤時刻: <span class="time-display"><%= todayAttendance != null && todayAttendance.getStartTime() != null ? todayAttendance.getStartTime().toString() : "--:--" %></span></p>
+            <p>出勤時刻: <span class="time-display"><%= (todayAttendance != null && todayAttendance.getStartTime() != null) ? todayAttendance.getStartTime().format(timeFormatter) : "--:--" %></span></p>
             
-            <p>退勤時刻: <span class="time-display"><%= todayAttendance != null && todayAttendance.getEndTime() != null ? todayAttendance.getEndTime().toString() : "--:--" %></span></p>
+            <p>退勤時刻: <span class="time-display"><%= (todayAttendance != null && todayAttendance.getEndTime() != null) ? todayAttendance.getEndTime().format(timeFormatter) : "--:--" %></span></p>
+
         </div>
         
         <div class="attendance-buttons">
@@ -68,4 +70,3 @@
     </div>
 </body>
 </html>
-
