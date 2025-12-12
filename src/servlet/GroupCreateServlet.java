@@ -6,12 +6,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 import dao.GroupDAO;
 import model.Group;
 import model.User;
+import util.AuthUtil;
 
 /**
  * グループ作成サーブレット
@@ -26,8 +26,7 @@ public class GroupCreateServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // セッションからログインユーザーを取得
-        HttpSession session = request.getSession();
-        User loginUser = (User) session.getAttribute("loginUser");
+        User loginUser = AuthUtil.getLoginUser(request);
         
         if (loginUser == null) {
             // ログインしていない場合はログイン画面へリダイレクト
@@ -45,8 +44,7 @@ public class GroupCreateServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // セッションからログインユーザーを取得
-        HttpSession session = request.getSession();
-        User loginUser = (User) session.getAttribute("loginUser");
+        User loginUser = AuthUtil.getLoginUser(request);
         
         if (loginUser == null) {
             // ログインしていない場合はログイン画面へリダイレクト
@@ -73,7 +71,7 @@ public class GroupCreateServlet extends HttpServlet {
         
         if (createdGroup != null) {
             // 作成成功：ダッシュボードにリダイレクト
-            session.setAttribute("successMessage", "グループ「" + groupName + "」を作成しました。");
+            request.getSession().setAttribute("successMessage", "グループ「" + groupName + "」を作成しました。");
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
             // 作成失敗：エラーメッセージを設定して作成画面に戻す

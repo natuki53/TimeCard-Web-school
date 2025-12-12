@@ -6,10 +6,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import dao.RememberTokenDAO;
 import dao.UserDAO;
 import model.User;
+import util.AuthUtil;
 
 /**
  * ログイン処理サーブレット
@@ -50,6 +53,23 @@ public class LoginServlet extends HttpServlet {
             // ログイン成功：セッションにユーザー情報を保存
             HttpSession session = request.getSession();
             session.setAttribute("loginUser", user);
+
+            // ログイン状態保持（任意）
+            String remember = request.getParameter("rememberMe");
+            if ("1".equals(remember)) {
+                RememberTokenDAO tokenDAO = new RememberTokenDAO();
+                RememberTokenDAO.RememberToken token = tokenDAO.issueToken(user.getId(), 30);
+                if (token != null) {
+                    Cookie c = new Cookie(AuthUtil.REMEMBER_COOKIE_NAME, token.rawToken);
+                    c.setHttpOnly(true);
+                    c.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
+                    c.setMaxAge(60 * 60 * 24 * 30);
+                    if (request.isSecure()) {
+                        c.setSecure(true);
+                    }
+                    response.addCookie(c);
+                }
+            }
             
             // /dashboardにリダイレクト
             response.sendRedirect(request.getContextPath() + "/dashboard");

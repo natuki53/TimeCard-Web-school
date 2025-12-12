@@ -90,16 +90,22 @@
             <h2>今日の勤怠状況（<%= todayStr %>）</h2>
             <div class="today-status">
                 <% if (todayAttendance != null) { %>
+                    <%
+                        String dst = todayAttendance.getStartTime() != null ? todayAttendance.getStartTime().toString() : "未打刻";
+                        if (dst.length() >= 5 && !"未打刻".equals(dst)) dst = dst.substring(0, 5);
+                        String det = todayAttendance.getEndTime() != null ? todayAttendance.getEndTime().toString() : "未打刻";
+                        if (det.length() >= 5 && !"未打刻".equals(det)) det = det.substring(0, 5);
+                    %>
                     <div class="status-item">
                         <span class="status-label">出勤時刻:</span>
                         <span class="status-value">
-                            <%= todayAttendance.getStartTime() != null ? todayAttendance.getStartTime().toString() : "未打刻" %>
+                            <%= dst %>
                         </span>
                     </div>
                     <div class="status-item">
                         <span class="status-label">退勤時刻:</span>
                         <span class="status-value">
-                            <%= todayAttendance.getEndTime() != null ? todayAttendance.getEndTime().toString() : "未打刻" %>
+                            <%= det %>
                         </span>
                     </div>
                 <% } else { %>
@@ -187,8 +193,14 @@
                             <% for (Attendance attendance : recentAttendances) { %>
                                 <tr>
                                     <td><%= attendance.getWorkDate() %></td>
-                                    <td><%= attendance.getStartTime() != null ? attendance.getStartTime().toString() : "未打刻" %></td>
-                                    <td><%= attendance.getEndTime() != null ? attendance.getEndTime().toString() : "未打刻" %></td>
+                                    <%
+                                        String rst = attendance.getStartTime() != null ? attendance.getStartTime().toString() : "未打刻";
+                                        if (rst.length() >= 5 && !"未打刻".equals(rst)) rst = rst.substring(0, 5);
+                                        String ret = attendance.getEndTime() != null ? attendance.getEndTime().toString() : "未打刻";
+                                        if (ret.length() >= 5 && !"未打刻".equals(ret)) ret = ret.substring(0, 5);
+                                    %>
+                                    <td><%= rst %></td>
+                                    <td><%= ret %></td>
                                 </tr>
                             <% } %>
                         </tbody>

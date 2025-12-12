@@ -14,6 +14,10 @@
     List<GroupMember> members = (List<GroupMember>) request.getAttribute("members");
     @SuppressWarnings("unchecked")
     Map<Integer, List<Attendance>> memberAttendances = (Map<Integer, List<Attendance>>) request.getAttribute("memberAttendances");
+    @SuppressWarnings("unchecked")
+    Map<Integer, Integer> memberAttendanceDays = (Map<Integer, Integer>) request.getAttribute("memberAttendanceDays");
+    @SuppressWarnings("unchecked")
+    Map<Integer, String> memberTotalWorkTime = (Map<Integer, String>) request.getAttribute("memberTotalWorkTime");
     
     YearMonth targetYearMonth = (YearMonth) request.getAttribute("targetYearMonth");
     YearMonth prevMonth = (YearMonth) request.getAttribute("prevMonth");
@@ -128,14 +132,57 @@
                                             <th>出勤時刻</th>
                                             <th>退勤時刻</th>
                                             <th>状況</th>
+                                            <th>修正</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <% for (Attendance attendance : attendances) { %>
-                                            <tr>
+                                            <%
+                                                // 管理者が「一般ユーザー修正」の黄色行にホバーしたときに差分を見せる
+                                                String hoverTitle = null;
+                                                if (isAdmin != null && isAdmin && attendance.isCorrected() && !attendance.isCorrectedByAdmin()) {
+                                                    String fromStart = attendance.getPrevStartTime() != null ? attendance.getPrevStartTime().toString() : "--:--";
+                                                    if (fromStart.length() >= 5 && !"--:--".equals(fromStart)) fromStart = fromStart.substring(0, 5);
+                                                    String toStart = attendance.getStartTime() != null ? attendance.getStartTime().toString() : "--:--";
+                                                    if (toStart.length() >= 5 && !"--:--".equals(toStart)) toStart = toStart.substring(0, 5);
+                                                    String fromEnd = attendance.getPrevEndTime() != null ? attendance.getPrevEndTime().toString() : "--:--";
+                                                    if (fromEnd.length() >= 5 && !"--:--".equals(fromEnd)) fromEnd = fromEnd.substring(0, 5);
+                                                    String toEnd = attendance.getEndTime() != null ? attendance.getEndTime().toString() : "--:--";
+                                                    if (toEnd.length() >= 5 && !"--:--".equals(toEnd)) toEnd = toEnd.substring(0, 5);
+                                                    hoverTitle = "修正内容: 出勤 " + fromStart + "→" + toStart + " / 退勤 " + fromEnd + "→" + toEnd;
+                                                }
+                                            %>
+                                            <tr
+                                                class="<%=
+                                                    (attendance.isCancelled() && !attendance.isCancelledByAdmin()) ? "attendance-cancelled-by-member" :
+                                                    (attendance.isCorrected() && !attendance.isCorrectedByAdmin()) ? "attendance-corrected-by-member" : ""
+                                                %>"
+                                                <%= hoverTitle != null ? "title=\"" + hoverTitle + "\"" : "" %>
+                                            >
                                                 <td><%= attendance.getWorkDate() %></td>
-                                                <td><%= attendance.getStartTime() != null ? attendance.getStartTime().toString() : "未打刻" %></td>
-                                                <td><%= attendance.getEndTime() != null ? attendance.getEndTime().toString() : "未打刻" %></td>
+                                                <td>
+                                                    <%
+                                                        String gst = "未打刻";
+                                                        if (!attendance.isCancelled() && attendance.getStartTime() != null) {
+                                                            gst = attendance.getStartTime().toString();
+                                                            if (gst.length() >= 5) gst = gst.substring(0, 5);
+                                                        }
+                                                    %>
+                                                    <%= gst %>
+                                                </td>
+                                                <td>
+                                                    <%
+                                                        String get = "未打刻";
+                                                        if (!attendance.isCancelled() && attendance.getEndTime() != null) {
+                                                            get = attendance.getEndTime().toString();
+                                                            if (get.length() >= 5) get = get.substring(0, 5);
+                                                        }
+                                                    %>
+                                                    <%= attendance.isCancelled() ? "未打刻" : get %>
+                                                    <% if (attendance.isCancelled() && !attendance.isCancelledByAdmin()) { %>
+                                                        <div class="cancelled-message">この勤怠は取り消しされました。</div>
+                                                    <% } %>
+                                                </td>
                                                 <td>
                                                     <% 
                                                         if (attendance.getStartTime() != null && attendance.getEndTime() != null) {
@@ -151,6 +198,37 @@
                                                         <span class="status-incomplete">未出勤</span>
                                                     <% } %>
                                                 </td>
+                                                <td>
+                                                    <div class="edit-actions">
+                                                    <details>
+                                                        <summary class="btn btn-sm btn-secondary">修正</summary>
+                                                        <%
+                                                            String stVal = attendance.getStartTime() != null ? attendance.getStartTime().toString() : "";
+                                                            if (stVal.length() >= 5) stVal = stVal.substring(0, 5);
+                                                            String etVal = attendance.getEndTime() != null ? attendance.getEndTime().toString() : "";
+                                                            if (etVal.length() >= 5) etVal = etVal.substring(0, 5);
+                                                        %>
+                                                        <form method="POST" action="<%= request.getContextPath() %>/attendance/correct" class="attendance-correct-form">
+                                                            <input type="hidden" name="userId" value="<%= member.getUserId() %>">
+                                                            <input type="hidden" name="workDate" value="<%= attendance.getWorkDate().toString() %>">
+                                                            <input type="hidden" name="groupId" value="<%= group.getId() %>">
+                                                            <div class="form-group inline-form">
+                                                                <label>出勤:</label>
+                                                                <input type="time" name="startTime" value="<%= stVal %>">
+                                                                <label>退勤:</label>
+                                                                <input type="time" name="endTime" value="<%= etVal %>">
+                                                                <button type="submit" class="btn btn-sm btn-primary">保存</button>
+                                                            </div>
+                                                        </form>
+                                                    </details>
+                                                    <form method="POST" action="<%= request.getContextPath() %>/attendance/cancel" style="display:inline;" onsubmit="return confirm('この勤怠を取り消しますか？');">
+                                                        <input type="hidden" name="userId" value="<%= member.getUserId() %>">
+                                                        <input type="hidden" name="workDate" value="<%= attendance.getWorkDate().toString() %>">
+                                                        <input type="hidden" name="groupId" value="<%= group.getId() %>">
+                                                        <button type="submit" class="btn btn-sm btn-danger">勤怠削除</button>
+                                                    </form>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         <% } %>
                                     </tbody>
@@ -158,31 +236,18 @@
                                 
                                 <!-- 統計情報 -->
                                 <div class="member-stats">
-                                    <% 
-                                        // その月の日数を取得
-                                        int daysInMonth = targetYearMonth.lengthOfMonth();
-                                        
-                                        // 勤怠記録がある日数
-                                        int recordedDays = attendances.size();
-                                        int completeDays = 0;
-                                        int partialDays = 0;
-                                        
-                                        for (Attendance att : attendances) {
-                                            if (att.getStartTime() != null && att.getEndTime() != null) {
-                                                completeDays++;
-                                            } else if (att.getStartTime() != null) {
-                                                partialDays++;
-                                            }
+                                    <%
+                                        int days = 0;
+                                        if (memberAttendanceDays != null && memberAttendanceDays.get(member.getUserId()) != null) {
+                                            days = memberAttendanceDays.get(member.getUserId());
                                         }
-                                        
-                                        // 未出勤日数 = その月の日数 - 勤怠記録がある日数
-                                        int absentDays = daysInMonth - recordedDays;
+                                        String work = "00:00";
+                                        if (memberTotalWorkTime != null && memberTotalWorkTime.get(member.getUserId()) != null) {
+                                            work = memberTotalWorkTime.get(member.getUserId());
+                                        }
                                     %>
-                                    <span class="stat-item">対象日数: <%= daysInMonth %>日</span>
-                                    <span class="stat-item">出勤記録: <%= recordedDays %>日</span>
-                                    <span class="stat-item">完了: <%= completeDays %>日</span>
-                                    <span class="stat-item">部分出勤: <%= partialDays %>日</span>
-                                    <span class="stat-item">未出勤: <%= absentDays %>日</span>
+                                    <span class="stat-item">出勤日数: <%= days %>日</span>
+                                    <span class="stat-item">合計勤務時間: <%= work %></span>
                                 </div>
                                     <% } else { %>
                                         <div class="no-attendance">
@@ -210,6 +275,31 @@
         function toggleMobileMenu() {
             var menu = document.getElementById('mobileMenu');
             menu.classList.toggle('show');
+        }
+        
+        // 修正ボタンのテキストを開閉状態に応じて変更
+        document.addEventListener('DOMContentLoaded', function() {
+            const detailsElements = document.querySelectorAll('details');
+            detailsElements.forEach(function(details) {
+                const summary = details.querySelector('summary');
+                if (summary && summary.textContent.trim() === '修正') {
+                    // 初期状態を設定
+                    updateSummaryText(details, summary);
+                    
+                    // 開閉イベントを監視
+                    details.addEventListener('toggle', function() {
+                        updateSummaryText(details, summary);
+                    });
+                }
+            });
+        });
+        
+        function updateSummaryText(details, summary) {
+            if (details.open) {
+                summary.textContent = '修正キャンセル';
+            } else {
+                summary.textContent = '修正';
+            }
         }
     </script>
 </body>

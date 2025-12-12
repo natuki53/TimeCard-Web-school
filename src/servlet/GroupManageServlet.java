@@ -15,6 +15,7 @@ import dao.UserDAO;
 import model.Group;
 import model.GroupMember;
 import model.User;
+import util.AuthUtil;
 
 /**
  * グループ管理サーブレット
@@ -30,7 +31,7 @@ public class GroupManageServlet extends HttpServlet {
         
         // セッションからログインユーザーを取得
         HttpSession session = request.getSession();
-        User loginUser = (User) session.getAttribute("loginUser");
+        User loginUser = AuthUtil.getLoginUser(request);
         
         if (loginUser == null) {
             // ログインしていない場合はログイン画面へリダイレクト
@@ -100,7 +101,7 @@ public class GroupManageServlet extends HttpServlet {
         
         // セッションからログインユーザーを取得
         HttpSession session = request.getSession();
-        User loginUser = (User) session.getAttribute("loginUser");
+        User loginUser = AuthUtil.getLoginUser(request);
         
         if (loginUser == null) {
             // ログインしていない場合はログイン画面へリダイレクト

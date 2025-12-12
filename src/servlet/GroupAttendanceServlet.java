@@ -6,7 +6,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.YearMonth;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import model.Attendance;
 import model.Group;
 import model.GroupMember;
 import model.User;
+import util.AuthUtil;
 
 /**
  * グループ勤怠確認サーブレット
@@ -32,8 +32,7 @@ public class GroupAttendanceServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // セッションからログインユーザーを取得
-        HttpSession session = request.getSession();
-        User loginUser = (User) session.getAttribute("loginUser");
+        User loginUser = AuthUtil.getLoginUser(request);
         
         if (loginUser == null) {
             // ログインしていない場合はログイン画面へリダイレクト
@@ -96,25 +95,62 @@ public class GroupAttendanceServlet extends HttpServlet {
         // 各メンバーの勤怠情報を取得
         AttendanceDAO attendanceDAO = new AttendanceDAO();
         Map<Integer, List<Attendance>> memberAttendances = new HashMap<>();
+        Map<Integer, Integer> memberAttendanceDays = new HashMap<>();
+        Map<Integer, String> memberTotalWorkTime = new HashMap<>();
         
         if (isAdmin) {
             // 管理者の場合：全メンバーの勤怠を取得
             for (GroupMember member : members) {
                 List<Attendance> attendances = attendanceDAO.findByUserIdAndMonth(
                     member.getUserId(), 
+                    groupId,
                     targetYearMonth.getYear(), 
                     targetYearMonth.getMonthValue()
                 );
                 memberAttendances.put(member.getUserId(), attendances);
+
+                // 統計（出勤日数、合計勤務時間=休憩控除後）
+                int days = 0;
+                int workMinutes = 0;
+                if (attendances != null) {
+                    for (Attendance att : attendances) {
+                        if (att.getStartTime() != null) days++;
+                        if (!att.isCancelled() && att.getStartTime() != null && att.getEndTime() != null) {
+                            int minutes = (int) java.time.Duration.between(att.getStartTime(), att.getEndTime()).toMinutes();
+                            int breakMin = attendanceDAO.sumBreakMinutes(att.getId());
+                            int wm = minutes - breakMin;
+                            if (wm > 0) workMinutes += wm;
+                        }
+                    }
+                }
+                memberAttendanceDays.put(member.getUserId(), days);
+                memberTotalWorkTime.put(member.getUserId(), AttendanceDAO.formatMinutesHHmm(workMinutes));
             }
         } else {
             // 一般メンバーの場合：自分の勤怠のみ取得
             List<Attendance> myAttendances = attendanceDAO.findByUserIdAndMonth(
                 loginUser.getId(), 
+                groupId,
                 targetYearMonth.getYear(), 
                 targetYearMonth.getMonthValue()
             );
             memberAttendances.put(loginUser.getId(), myAttendances);
+
+            int days = 0;
+            int workMinutes = 0;
+            if (myAttendances != null) {
+                for (Attendance att : myAttendances) {
+                    if (att.getStartTime() != null) days++;
+                    if (!att.isCancelled() && att.getStartTime() != null && att.getEndTime() != null) {
+                        int minutes = (int) java.time.Duration.between(att.getStartTime(), att.getEndTime()).toMinutes();
+                        int breakMin = attendanceDAO.sumBreakMinutes(att.getId());
+                        int wm = minutes - breakMin;
+                        if (wm > 0) workMinutes += wm;
+                    }
+                }
+            }
+            memberAttendanceDays.put(loginUser.getId(), days);
+            memberTotalWorkTime.put(loginUser.getId(), AttendanceDAO.formatMinutesHHmm(workMinutes));
         }
         
         // 前月・次月のリンク用
@@ -125,6 +161,8 @@ public class GroupAttendanceServlet extends HttpServlet {
         request.setAttribute("group", group);
         request.setAttribute("members", members);
         request.setAttribute("memberAttendances", memberAttendances);
+        request.setAttribute("memberAttendanceDays", memberAttendanceDays);
+        request.setAttribute("memberTotalWorkTime", memberTotalWorkTime);
         request.setAttribute("targetYearMonth", targetYearMonth);
         request.setAttribute("prevMonth", prevMonth);
         request.setAttribute("nextMonth", nextMonth);

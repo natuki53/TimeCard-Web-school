@@ -37,6 +37,13 @@
                 <label for="password">パスワード</label>
                 <input type="password" id="password" name="password" required>
             </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="rememberMe" value="1">
+                    ログイン状態を保持する
+                </label>
+            </div>
             
             <div class="button-group">
                 <button type="submit" class="btn btn-primary">ログイン</button>

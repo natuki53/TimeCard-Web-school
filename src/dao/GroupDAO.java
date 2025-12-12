@@ -102,6 +102,50 @@ public class GroupDAO {
         }
         return groups;
     }
+
+    /**
+     * ユーザーが関係するグループ一覧を取得（管理者 OR メンバー）
+     * - 管理者だが group_members に未登録のケースでも取得できるようにする
+     * @param userId ユーザーID
+     * @return グループ一覧（重複なし）
+     */
+    public List<Group> findGroupsByUser(int userId) {
+        List<Group> groups = new ArrayList<>();
+        String sql = "SELECT DISTINCT g.* FROM groups g "
+                   + "LEFT JOIN group_members gm ON g.id = gm.group_id "
+                   + "WHERE g.admin_user_id = ? OR gm.user_id = ? "
+                   + "ORDER BY g.created_at DESC";
+
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            stmt.setInt(2, userId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Group group = new Group();
+                    group.setId(rs.getInt("id"));
+                    group.setName(rs.getString("name"));
+                    group.setDescription(rs.getString("description"));
+                    group.setAdminUserId(rs.getInt("admin_user_id"));
+                    group.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                    group.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
+                    groups.add(group);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return groups;
+    }
     
     /**
      * ユーザーが参加しているグループ一覧を取得

@@ -6,7 +6,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import dao.GroupDAO;
 import model.Group;
 import model.GroupMember;
 import model.User;
+import util.AuthUtil;
 
 /**
  * グループ詳細表示サーブレット
@@ -27,8 +27,7 @@ public class GroupInfoServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // セッションからログインユーザーを取得
-        HttpSession session = request.getSession();
-        User loginUser = (User) session.getAttribute("loginUser");
+        User loginUser = AuthUtil.getLoginUser(request);
         
         if (loginUser == null) {
             // ログインしていない場合はログイン画面へリダイレクト

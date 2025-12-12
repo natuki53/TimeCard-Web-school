@@ -394,6 +394,22 @@ table tr:hover {
     font-size: 18px;
 }
 
+.attendance-divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 12px 0;
+}
+
+.break-total {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.break-item {
+    margin: 6px 0;
+}
+
 .time-display {
     font-size: 24px;
     font-weight: bold;
@@ -1105,6 +1121,79 @@ a:hover {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 勤怠修正（一般ユーザーが修正した行は黄色表示） */
+.attendance-corrected-by-member {
+    background-color: #fff3cd !important;
+}
+
+.attendance-corrected-by-member:hover {
+    background-color: #ffe8a1 !important;
+}
+
+/* 勤怠取消（一般ユーザーが取り消した行は黄色＋メッセージ） */
+.attendance-cancelled-by-member {
+    background-color: #fff3cd !important;
+}
+
+.attendance-cancelled-by-member:hover {
+    background-color: #ffe8a1 !important;
+}
+
+.cancelled-message {
+    margin-top: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #856404;
+}
+
+.edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.edit-actions details {
+    display: inline-block;
+}
+
+/* グループ選択 */
+.group-select {
+    margin: 10px 0 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.group-select-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.group-select-form select {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 220px;
+}
+
+.attendance-correct-form .inline-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.attendance-correct-form input[type="time"] {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 .attendance-table th,

@@ -16,6 +16,7 @@ import dao.GroupDAO;
 import model.Attendance;
 import model.Group;
 import model.User;
+import util.AuthUtil;
 
 /**
  * ダッシュボード画面サーブレット
@@ -30,7 +31,7 @@ public class DashboardServlet extends HttpServlet {
         
         // セッションからログインユーザーを取得
         HttpSession session = request.getSession();
-        User loginUser = (User) session.getAttribute("loginUser");
+        User loginUser = AuthUtil.getLoginUser(request);
         
         if (loginUser == null) {
             // ログインしていない場合はログイン画面へリダイレクト

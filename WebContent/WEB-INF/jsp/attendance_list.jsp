@@ -1,12 +1,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="model.User" %>
 <%@ page import="model.Attendance" %>
+<%@ page import="model.Group" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
 <%@ page import="java.time.LocalDate" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     User loginUser = (User) session.getAttribute("loginUser");
     List<Attendance> attendanceList = (List<Attendance>) request.getAttribute("attendanceList");
+    @SuppressWarnings("unchecked")
+    List<Group> groups = (List<Group>) request.getAttribute("groups");
+    Integer selectedGroupId = (Integer) request.getAttribute("selectedGroupId"); // null=グループなし
+    @SuppressWarnings("unchecked")
+    Map<Integer, Integer> breakMinutesByAttendanceId = (Map<Integer, Integer>) request.getAttribute("breakMinutesByAttendanceId");
+    String totalWorkTime = (String) request.getAttribute("totalWorkTime");
+    if (totalWorkTime == null) totalWorkTime = "00:00";
     Integer year = (Integer) request.getAttribute("year");
     Integer month = (Integer) request.getAttribute("month");
     Integer attendanceDays = (Integer) request.getAttribute("attendanceDays");
@@ -25,6 +34,7 @@
     
     DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy年MM月");
     String currentMonthStr = currentMonth.format(monthFormatter);
+    String groupParam = "groupId=" + (selectedGroupId != null ? selectedGroupId : 0);
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -76,11 +86,37 @@
         </div>
         
         <div class="month-navigation">
-            <a href="?year=<%= prevMonth.getYear() %>&month=<%= prevMonth.getMonthValue() %>">前の月</a>
+            <a href="?year=<%= prevMonth.getYear() %>&month=<%= prevMonth.getMonthValue() %>&<%= groupParam %>">前の月</a>
             
             <span class="current-month"><%= currentMonthStr %></span>
             
-            <a href="?year=<%= nextMonth.getYear() %>&month=<%= nextMonth.getMonthValue() %>">次の月</a>
+            <a href="?year=<%= nextMonth.getYear() %>&month=<%= nextMonth.getMonthValue() %>&<%= groupParam %>">次の月</a>
+        </div>
+
+        <!-- グループ選択 -->
+        <div class="group-select">
+            <form method="GET" action="<%= request.getContextPath() %>/attendance/list" class="group-select-form">
+                <input type="hidden" name="year" value="<%= year %>">
+                <input type="hidden" name="month" value="<%= month %>">
+                <label for="groupId"><strong>表示するグループ:</strong></label>
+                <select id="groupId" name="groupId" onchange="this.form.submit()">
+                    <option value="0" <%= (selectedGroupId == null) ? "selected" : "" %>>グループなし</option>
+                    <%
+                        if (groups != null) {
+                            for (Group g : groups) {
+                    %>
+                        <option value="<%= g.getId() %>" <%= (selectedGroupId != null && selectedGroupId == g.getId()) ? "selected" : "" %>>
+                            <%= g.getName() %>
+                        </option>
+                    <%
+                            }
+                        }
+                    %>
+                </select>
+                <noscript>
+                    <button type="submit" class="btn btn-primary btn-sm">切替</button>
+                </noscript>
+            </form>
         </div>
         
         <table>
@@ -88,7 +124,9 @@
                 <tr>
                     <th>日付</th>
                     <th>出勤時刻</th>
+                    <th>休憩合計</th>
                     <th>退勤時刻</th>
+                    <th>修正</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,17 +135,84 @@
                         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                         for (Attendance attendance : attendanceList) {
                 %>
-                <tr>
+                <tr class="<%=
+                    (attendance.isCancelled() && !attendance.isCancelledByAdmin()) ? "attendance-cancelled-by-member" :
+                    (attendance.isCorrected() && !attendance.isCorrectedByAdmin()) ? "attendance-corrected-by-member" : ""
+                %>">
                     <td><%= attendance.getWorkDate().format(dateFormatter) %></td>
-                    <td><%= attendance.getStartTime() != null ? attendance.getStartTime().toString() : "--:--" %></td>
-                    <td><%= attendance.getEndTime() != null ? attendance.getEndTime().toString() : "--:--" %></td>
+                    <td>
+                        <%
+                            String st = "--:--";
+                            if (!attendance.isCancelled() && attendance.getStartTime() != null) {
+                                st = attendance.getStartTime().toString();
+                                if (st.length() >= 5) st = st.substring(0, 5);
+                            }
+                        %>
+                        <%= st %>
+                    </td>
+                    <td>
+                        <%
+                            int bm = 0;
+                            if (breakMinutesByAttendanceId != null && breakMinutesByAttendanceId.get(attendance.getId()) != null) {
+                                bm = breakMinutesByAttendanceId.get(attendance.getId());
+                            }
+                            int bh = bm / 60;
+                            int bmin = bm % 60;
+                            String breakHHmm = String.format("%02d:%02d", bh, bmin);
+                        %>
+                        <%= attendance.isCancelled() ? "00:00" : breakHHmm %>
+                    </td>
+                    <td>
+                        <%
+                            String et = "--:--";
+                            if (!attendance.isCancelled() && attendance.getEndTime() != null) {
+                                et = attendance.getEndTime().toString();
+                                if (et.length() >= 5) et = et.substring(0, 5);
+                            }
+                        %>
+                        <%= et %>
+                        <% if (attendance.isCancelled() && !attendance.isCancelledByAdmin()) { %>
+                            <div class="cancelled-message">この勤怠は取り消しされました。</div>
+                        <% } %>
+                    </td>
+                    <td>
+                        <div class="edit-actions">
+                            <details>
+                                <summary class="btn btn-sm btn-secondary">修正</summary>
+                            <%
+                                String stVal = attendance.getStartTime() != null ? attendance.getStartTime().toString() : "";
+                                if (stVal.length() >= 5) stVal = stVal.substring(0, 5);
+                                String etVal = attendance.getEndTime() != null ? attendance.getEndTime().toString() : "";
+                                if (etVal.length() >= 5) etVal = etVal.substring(0, 5);
+                            %>
+                            <form method="POST" action="<%= request.getContextPath() %>/attendance/correct" class="attendance-correct-form">
+                                <input type="hidden" name="userId" value="<%= loginUser.getId() %>">
+                                <input type="hidden" name="workDate" value="<%= attendance.getWorkDate().toString() %>">
+                                <input type="hidden" name="groupId" value="<%= selectedGroupId != null ? selectedGroupId : 0 %>">
+                                <div class="form-group inline-form">
+                                    <label>出勤:</label>
+                                    <input type="time" name="startTime" value="<%= stVal %>">
+                                    <label>退勤:</label>
+                                    <input type="time" name="endTime" value="<%= etVal %>">
+                                    <button type="submit" class="btn btn-sm btn-primary">保存</button>
+                                </div>
+                            </form>
+                            </details>
+                            <form method="POST" action="<%= request.getContextPath() %>/attendance/cancel" style="display:inline;" onsubmit="return confirm('この勤怠を取り消しますか？');">
+                                <input type="hidden" name="userId" value="<%= loginUser.getId() %>">
+                                <input type="hidden" name="workDate" value="<%= attendance.getWorkDate().toString() %>">
+                                <input type="hidden" name="groupId" value="<%= selectedGroupId != null ? selectedGroupId : 0 %>">
+                                <button type="submit" class="btn btn-sm btn-danger">勤怠削除</button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
                 <%
                         }
                     } else {
                 %>
                 <tr>
-                    <td colspan="3" style="text-align: center; color: #666;">この月の勤怠データはありません</td>
+                    <td colspan="5" style="text-align: center; color: #666;">この月の勤怠データはありません</td>
                 </tr>
                 <%
                     }
@@ -116,7 +221,10 @@
         </table>
         
         <div class="stats">
-            <p>出勤日数: <strong><%= attendanceDays != null ? attendanceDays : 0 %></strong> 日</p>
+            <p>
+                出勤日数: <strong><%= attendanceDays != null ? attendanceDays : 0 %></strong> 日　
+                合計勤務時間: <strong><%= totalWorkTime %></strong>
+            </p>
         </div>
         
         <div class="button-group">
@@ -136,6 +244,31 @@
                 document.getElementById('mobileMenu').classList.remove('active');
             }
         });
+        
+        // 修正ボタンのテキストを開閉状態に応じて変更
+        document.addEventListener('DOMContentLoaded', function() {
+            const detailsElements = document.querySelectorAll('details');
+            detailsElements.forEach(function(details) {
+                const summary = details.querySelector('summary');
+                if (summary && summary.textContent.trim() === '修正') {
+                    // 初期状態を設定
+                    updateSummaryText(details, summary);
+                    
+                    // 開閉イベントを監視
+                    details.addEventListener('toggle', function() {
+                        updateSummaryText(details, summary);
+                    });
+                }
+            });
+        });
+        
+        function updateSummaryText(details, summary) {
+            if (details.open) {
+                summary.textContent = '修正キャンセル';
+            } else {
+                summary.textContent = '修正';
+            }
+        }
     </script>
 </body>
 </html>
