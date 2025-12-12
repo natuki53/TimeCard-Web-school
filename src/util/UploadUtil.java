@@ -2,6 +2,8 @@ package util;
 
 import jakarta.servlet.ServletContext;
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
@@ -114,6 +116,53 @@ public class UploadUtil {
         int idx = s.lastIndexOf('/');
         if (idx >= 0) s = s.substring(idx + 1);
         return s;
+    }
+
+    /**
+     * HTTPヘッダ用のASCIIフォールバックファイル名を作る（非ASCIIは _ に置換）
+     */
+    public static String toAsciiFileName(String filename) {
+        String name = safeDisplayName(filename);
+        if (name == null || name.isEmpty()) return "download";
+        // 制御文字や危険な記号を落として、ASCIIのみにする
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            boolean ok =
+                    (c >= 'a' && c <= 'z') ||
+                    (c >= 'A' && c <= 'Z') ||
+                    (c >= '0' && c <= '9') ||
+                    c == '.' || c == '_' || c == '-' || c == ' ';
+            sb.append(ok ? c : '_');
+        }
+        String out = sb.toString().trim().replaceAll("\\s+", " ");
+        if (out.isEmpty()) out = "download";
+        // ダブルクオートはヘッダを壊すので除去
+        out = out.replace("\"", "");
+        // 末尾のドット/スペースは避ける
+        while (out.endsWith(".") || out.endsWith(" ")) out = out.substring(0, out.length() - 1);
+        if (out.isEmpty()) out = "download";
+        return out;
+    }
+
+    /**
+     * Content-Disposition の値を組み立てる（RFC 5987/6266: filename* を付与）
+     * TomcatはヘッダをISO-8859-1相当で出すため、filename はASCIIフォールバックにする。
+     */
+    public static String buildContentDisposition(String dispositionType, String filename) {
+        String type = (dispositionType == null || dispositionType.isBlank()) ? "attachment" : dispositionType;
+        String original = safeDisplayName(filename);
+        String fallback = toAsciiFileName(original);
+
+        String encoded = "";
+        if (original != null && !original.isEmpty()) {
+            // URLEncoderはスペースを+にするので%20へ
+            encoded = URLEncoder.encode(original, StandardCharsets.UTF_8).replace("+", "%20");
+        } else {
+            encoded = fallback;
+        }
+        // filename* は UTF-8''<pct-encoded>
+        return type + "; filename=\"" + fallback + "\"; filename*=UTF-8''" + encoded;
     }
 
     public static String formatBytes(long bytes) {

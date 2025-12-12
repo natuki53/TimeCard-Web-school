@@ -266,10 +266,10 @@
 
 .chat-attach-grid {
     display: grid;
-    /* 少数の時も中央に寄るように */
-    grid-template-columns: repeat(auto-fit, minmax(220px, 260px));
+    /* 一覧は左寄せ */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 260px));
     gap: 12px;
-    justify-content: center;
+    justify-content: start;
 }
 
 .chat-attach-card {
@@ -320,14 +320,17 @@
 .chat-attach-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    /* 中身（画像）を中央揃えで全体が見えるように */
+    object-fit: contain;
     display: block;
+    background: #f8f9fa;
 }
 
 .chat-attach-video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    /* 中身（動画）を中央揃えで全体が見えるように */
+    object-fit: contain;
     background: #000;
     display: block;
 }
@@ -383,6 +386,37 @@
     color: #6c757d;
     font-size: 12px;
     flex: 0 0 auto;
+}
+
+/* =========================
+  Popup toast (warnings/errors)
+========================= */
+.chat-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%) translateY(12px);
+    opacity: 0;
+    z-index: 3000;
+    max-width: min(720px, calc(100vw - 24px));
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(33, 37, 41, 0.92);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: opacity 200ms ease, transform 200ms ease;
+    pointer-events: none;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.chat-toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-toast { transition: none; }
 }
 
 

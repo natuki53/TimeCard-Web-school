@@ -19,12 +19,21 @@
 
     function hide() {
       var el = document.getElementById("cookieBanner");
-      if (el) el.style.display = "none";
+      if (!el) return;
+      el.classList.remove("is-visible");
+      el.classList.add("is-hidden");
+      el.setAttribute("aria-hidden", "true");
     }
 
     function show() {
       var el = document.getElementById("cookieBanner");
-      if (el) el.style.display = "block";
+      if (!el) return;
+      el.classList.remove("is-hidden");
+      // 次フレームで visible を付けてトランジションが確実に走るようにする
+      requestAnimationFrame(function () {
+        el.classList.add("is-visible");
+      });
+      el.setAttribute("aria-hidden", "false");
     }
 
     if (!getAccepted()) {

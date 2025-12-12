@@ -77,7 +77,8 @@
         <% if (postError != null && !postError.trim().isEmpty()) { %>
             <div class="error-message"><%= h.apply(postError) %></div>
         <% } %>
-        <div id="chatClientError" class="error-message" style="display:none;"></div>
+        <div id="chatClientError" class="error-message" style="display:none;" aria-live="polite"></div>
+        <div id="chatToast" class="chat-toast" role="status" aria-live="polite" aria-atomic="true" style="display:none;"></div>
 
         <div class="chat-messages" id="chatMessages">
             <% if (messages != null && !messages.isEmpty()) { %>
@@ -175,9 +176,11 @@
             var preview = document.getElementById('chatAttachPreview');
             var compose = document.getElementById('chatCompose');
             var clientError = document.getElementById('chatClientError');
+            var toast = document.getElementById('chatToast');
             var objectUrls = [];
             var MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB
             var MAX_TOTAL_BYTES = MAX_FILE_BYTES * 6; // サーバ側 maxRequestSize と合わせる
+            var toastTimer = null;
 
             function clearObjectUrls() {
                 if (!objectUrls || objectUrls.length === 0) return;
@@ -196,6 +199,36 @@
                     clientError.textContent = '';
                     clientError.style.display = 'none';
                 }
+            }
+
+            function showToast(msg) {
+                if (!toast) return;
+                if (toastTimer) {
+                    try { clearTimeout(toastTimer); } catch (e) {}
+                    toastTimer = null;
+                }
+                if (!msg || String(msg).trim().length === 0) {
+                    toast.classList.remove('is-visible');
+                    toast.style.display = 'none';
+                    toast.textContent = '';
+                    return;
+                }
+                toast.textContent = String(msg);
+                toast.style.display = 'block';
+                // トランジションを確実に走らせる
+                requestAnimationFrame(function() {
+                    toast.classList.add('is-visible');
+                });
+                toastTimer = setTimeout(function() {
+                    toast.classList.remove('is-visible');
+                    // アニメ終了後に非表示
+                    setTimeout(function() {
+                        if (!toast.classList.contains('is-visible')) {
+                            toast.style.display = 'none';
+                            toast.textContent = '';
+                        }
+                    }, 250);
+                }, 4200);
             }
 
             function formatBytes(bytes) {
@@ -256,11 +289,11 @@
                     var name = f.name || '';
                     var k = kindOf(f);
                     if (!isAllowedKind(k)) {
-                        errorMsg = '形式未対応: ' + name + ' は添付できません（対応形式は画像/動画/音楽/PDF/zip）。';
+                        errorMsg = '形式未対応: 対応形式は画像/動画/音楽/PDF/zipです。' + '(' + name + ')';
                         continue;
                     }
                     if ((f.size || 0) > MAX_FILE_BYTES) {
-                        errorMsg = '容量オーバー: ' + name + ' は1ファイルあたり50MBまでです（' + formatBytes(f.size || 0) + '）。';
+                        errorMsg = '容量オーバー: 1ファイルあたり50MBまでです。' + name + '（' + formatBytes(f.size || 0) + '）。';
                         continue;
                     }
                     if (total + (f.size || 0) > MAX_TOTAL_BYTES) {
@@ -290,7 +323,6 @@
                 if (!files || files.length === 0) {
                     preview.innerHTML = '';
                     clearObjectUrls();
-                    showError('');
                     return;
                 }
 
@@ -338,7 +370,8 @@
                 if (!newFiles || newFiles.length === 0) return;
                 var r = tryAddFiles(fileInput.files, newFiles);
                 fileInput.files = r.files;
-                showError(r.error);
+                showError(r.error); // DOM上のエラー（デバッグ/アクセシビリティ用）
+                showToast(r.error); // ポップアップ表示
                 renderPreview();
             }
 
@@ -348,6 +381,7 @@
                     var r = tryAddFiles([], fileInput.files);
                     fileInput.files = r.files;
                     showError(r.error);
+                    showToast(r.error);
                     renderPreview();
                 });
             }
@@ -362,7 +396,6 @@
                     var idx = idxStr != null ? parseInt(idxStr, 10) : NaN;
                     if (isNaN(idx)) return;
                     rebuildFiles(idx);
-                    showError('');
                     renderPreview();
                 });
             }
@@ -447,10 +480,12 @@
                     if (r.error) {
                         e.preventDefault();
                         showError(r.error);
+                        showToast(r.error);
                         // files は r.files に差し替えても良いが、ここではユーザーが×で調整できるよう維持
                         return;
                     }
                     showError('');
+                    showToast('');
                 });
             }
         })();

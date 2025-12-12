@@ -1,5 +1,6 @@
+<%@ page pageEncoding="UTF-8" %>
 <%-- Cookie利用通知・同意バナー（初回のみ表示） --%>
-<div id="cookieBanner" class="cookie-banner" style="display:none;">
+<div id="cookieBanner" class="cookie-banner is-hidden" aria-hidden="true">
   <div class="cookie-banner-inner">
     <div class="cookie-text">
       <div class="cookie-title">Cookieの使用について</div>

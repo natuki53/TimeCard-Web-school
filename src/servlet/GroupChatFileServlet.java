@@ -85,7 +85,7 @@ public class GroupChatFileServlet extends HttpServlet {
         response.setHeader("Content-Length", String.valueOf(f.length()));
         response.setHeader("X-Content-Type-Options", "nosniff");
         response.setHeader("Cache-Control", "no-store");
-        response.setHeader("Content-Disposition", disp + "; filename=\"" + safeName.replace("\"", "") + "\"");
+        response.setHeader("Content-Disposition", UploadUtil.buildContentDisposition(disp, safeName));
 
         try (OutputStream os = response.getOutputStream()) {
             Files.copy(f.toPath(), os);

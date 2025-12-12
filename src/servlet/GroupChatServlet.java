@@ -147,7 +147,7 @@ public class GroupChatServlet extends HttpServlet {
             String original = UploadUtil.safeDisplayName(p.getSubmittedFileName());
             if (p.getSize() > UploadUtil.MAX_FILE_BYTES) {
                 request.setAttribute("postError",
-                        "容量オーバー: " + original + " は1ファイルあたり50MBまでです（" + UploadUtil.formatBytes(p.getSize()) + "）。");
+                        "容量オーバー: 1ファイルあたり50MBまでです。" + original + "（" + UploadUtil.formatBytes(p.getSize()) + "）。");
                 doGetWithError(request, response, groupId);
                 return;
             }
@@ -156,7 +156,7 @@ public class GroupChatServlet extends HttpServlet {
             if (!allowed) {
                 String shownMime = (mime == null || mime.trim().isEmpty()) ? "不明" : mime;
                 request.setAttribute("postError",
-                        "形式未対応: " + original + "（" + shownMime + "）は添付できません。対応形式は画像/動画/音楽/PDF/zipです。");
+                        "形式未対応: 対応形式は画像/動画/音楽/PDF/zipです。" + original + "（" + shownMime + "）。");
                 doGetWithError(request, response, groupId);
                 return;
             }
