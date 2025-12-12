@@ -21,6 +21,10 @@
     // 勤怠履歴
     @SuppressWarnings("unchecked")
     List<Attendance> recentAttendances = (List<Attendance>) request.getAttribute("recentAttendances");
+    @SuppressWarnings("unchecked")
+    List<Attendance> thisMonthAttendances = (List<Attendance>) request.getAttribute("thisMonthAttendances");
+    Integer thisMonthYear = (Integer) request.getAttribute("thisMonthYear");
+    Integer thisMonthMonth = (Integer) request.getAttribute("thisMonthMonth");
     
     // グループ情報
     @SuppressWarnings("unchecked")
@@ -35,6 +39,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ダッシュボード - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
+    <script defer src="<%= request.getContextPath() %>/js/cookie_banner.js"></script>
 </head>
 <body class="with-header">
     <!-- ヘッダー -->
@@ -47,6 +52,7 @@
             <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
             <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
+            <a href="<%= request.getContextPath() %>/groups">グループ</a>
         </nav>
         
         <div class="header-user">
@@ -67,6 +73,7 @@
         <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
         <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
+        <a href="<%= request.getContextPath() %>/groups">グループ</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>
@@ -143,6 +150,7 @@
                                 </div>
                                 <div class="group-actions">
                                     <a href="<%= request.getContextPath() %>/group/manage?id=<%= group.getId() %>" class="btn btn-sm btn-primary">管理</a>
+                                    <a href="<%= request.getContextPath() %>/group/chat?id=<%= group.getId() %>" class="btn btn-sm btn-secondary">チャット</a>
                                     <a href="<%= request.getContextPath() %>/group/attendance?id=<%= group.getId() %>" class="btn btn-sm btn-secondary">勤怠確認</a>
                                 </div>
                             </div>
@@ -166,6 +174,7 @@
                                 </div>
                                 <div class="group-actions">
                                     <a href="<%= request.getContextPath() %>/group/info?id=<%= group.getId() %>" class="btn btn-sm btn-secondary">詳細</a>
+                                    <a href="<%= request.getContextPath() %>/group/chat?id=<%= group.getId() %>" class="btn btn-sm btn-secondary">チャット</a>
                                 </div>
                             </div>
                         <% } %>
@@ -174,6 +183,48 @@
                     <p class="no-groups">参加しているグループはありません</p>
                 <% } %>
             </div>
+        </section>
+
+        <!-- 今月の勤怠状況 -->
+        <section class="dashboard-section">
+            <h2>今月の勤怠状況</h2>
+            <% if (thisMonthAttendances != null && !thisMonthAttendances.isEmpty()) { %>
+                <div class="recent-attendance">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>日付</th>
+                                <th>グループ</th>
+                                <th>出勤時刻</th>
+                                <th>退勤時刻</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (Attendance attendance : thisMonthAttendances) { %>
+                                <tr>
+                                    <td><%= attendance.getWorkDate() %></td>
+                                    <td><%= attendance.getGroupName() != null ? attendance.getGroupName() : "グループなし" %></td>
+                                    <%
+                                        String mst = attendance.getStartTime() != null ? attendance.getStartTime().toString() : "未打刻";
+                                        if (mst.length() >= 5 && !"未打刻".equals(mst)) mst = mst.substring(0, 5);
+                                        String met = attendance.getEndTime() != null ? attendance.getEndTime().toString() : "未打刻";
+                                        if (met.length() >= 5 && !"未打刻".equals(met)) met = met.substring(0, 5);
+                                    %>
+                                    <td><%= mst %></td>
+                                    <td><%= met %></td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="button-group" style="margin-top: 12px;">
+                    <a href="<%= request.getContextPath() %>/attendance/list?year=<%= thisMonthYear != null ? thisMonthYear : LocalDate.now().getYear() %>&month=<%= thisMonthMonth != null ? thisMonthMonth : LocalDate.now().getMonthValue() %>" class="btn btn-secondary">
+                        今月の勤怠一覧へ
+                    </a>
+                </div>
+            <% } else { %>
+                <p class="no-records">今月の勤怠履歴がありません</p>
+            <% } %>
         </section>
 
         <!-- 最近の勤怠履歴 -->
@@ -185,6 +236,7 @@
                         <thead>
                             <tr>
                                 <th>日付</th>
+                                <th>グループ</th>
                                 <th>出勤時刻</th>
                                 <th>退勤時刻</th>
                             </tr>
@@ -193,6 +245,7 @@
                             <% for (Attendance attendance : recentAttendances) { %>
                                 <tr>
                                     <td><%= attendance.getWorkDate() %></td>
+                                    <td><%= attendance.getGroupName() != null ? attendance.getGroupName() : "グループなし" %></td>
                                     <%
                                         String rst = attendance.getStartTime() != null ? attendance.getStartTime().toString() : "未打刻";
                                         if (rst.length() >= 5 && !"未打刻".equals(rst)) rst = rst.substring(0, 5);
@@ -218,5 +271,7 @@
             menu.classList.toggle('show');
         }
     </script>
+
+    <%@ include file="/WEB-INF/jsp/parts/cookie_banner.jspf" %>
 </body>
 </html>

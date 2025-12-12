@@ -13,6 +13,11 @@ public class Attendance{
      * グループID（未所属/グループなしの場合は null）
      */
     private Integer groupId;
+    /**
+     * 表示用のグループ名（group_id が null の場合は「グループなし」を想定）
+     * DBには保持しない。
+     */
+    private String groupName;
     private LocalDate workDate;
     private LocalTime startTime;
     private LocalTime endTime;
@@ -62,6 +67,10 @@ public class Attendance{
         return groupId;
     }
     
+    public String getGroupName() {
+        return groupName;
+    }
+
     public LocalDate getWorkDate() {
         return workDate;
     }
@@ -109,6 +118,10 @@ public class Attendance{
 
     public void setGroupId(Integer groupId) {
         this.groupId = groupId;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
     
     public void setWorkDate(LocalDate workDate) {

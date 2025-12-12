@@ -24,6 +24,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>グループ管理 - <%= group.getName() %> - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
+    <script defer src="<%= request.getContextPath() %>/js/cookie_banner.js"></script>
 </head>
 <body class="with-header">
     <!-- ヘッダー -->
@@ -35,6 +36,7 @@
             <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
             <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
+            <a href="<%= request.getContextPath() %>/groups">グループ</a>
         </nav>
         
         <div class="header-user">
@@ -55,6 +57,7 @@
         <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
         <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
+        <a href="<%= request.getContextPath() %>/groups">グループ</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>
@@ -93,8 +96,11 @@
                 
                 <div class="form-group inline-form">
                     <label for="loginId">ユーザーのログインID:</label>
-                    <input type="text" id="loginId" name="loginId" 
-                           placeholder="例: user123" required maxlength="50">
+                    <div class="autocomplete">
+                        <input type="text" id="loginId" name="loginId"
+                               placeholder="例: user123" required maxlength="50" autocomplete="off">
+                        <div id="loginIdSuggestions" class="autocomplete-list" style="display:none;"></div>
+                    </div>
                     <button type="submit" class="btn btn-primary">追加</button>
                 </div>
             </form>
@@ -175,6 +181,97 @@
             var menu = document.getElementById('mobileMenu');
             menu.classList.toggle('show');
         }
+
+        // ログインID オートコンプリート（候補表示→クリックで確定）
+        (function() {
+            const input = document.getElementById('loginId');
+            const list = document.getElementById('loginIdSuggestions');
+            const groupId = "<%= group.getId() %>";
+            const baseUrl = "<%= request.getContextPath() %>/api/users/suggest";
+            let timer = null;
+            let lastQuery = "";
+
+            function hide() {
+                list.style.display = "none";
+                list.innerHTML = "";
+            }
+
+            function show(items) {
+                if (!items || items.length === 0) {
+                    hide();
+                    return;
+                }
+                list.innerHTML = items.map(u => {
+                    const label = (u.loginId || "") + "（" + (u.name || "") + "）";
+                    return '<button type="button" class="autocomplete-item" data-loginid="' + escapeHtml(u.loginId) + '">' + escapeHtml(label) + '</button>';
+                }).join("");
+                list.style.display = "block";
+            }
+
+            function escapeHtml(s) {
+                if (s == null) return "";
+                return String(s)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            async function fetchSuggestions(q) {
+                const url = baseUrl + "?groupId=" + encodeURIComponent(groupId) + "&q=" + encodeURIComponent(q);
+                const res = await fetch(url, { headers: { "Accept": "application/json" } });
+                if (!res.ok) return [];
+                return await res.json();
+            }
+
+            input.addEventListener("input", function() {
+                const q = (input.value || "").trim();
+                if (q.length === 0) {
+                    lastQuery = "";
+                    hide();
+                    return;
+                }
+                if (q === lastQuery) return;
+                lastQuery = q;
+
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(async () => {
+                    try {
+                        const items = await fetchSuggestions(q);
+                        // 入力が変わっていたら捨てる
+                        if (((input.value || "").trim()) !== q) return;
+                        show(items);
+                    } catch (e) {
+                        hide();
+                    }
+                }, 200);
+            });
+
+            list.addEventListener("click", function(e) {
+                const btn = e.target.closest(".autocomplete-item");
+                if (!btn) return;
+                const loginId = btn.getAttribute("data-loginid") || "";
+                input.value = loginId;
+                hide();
+                input.focus();
+            });
+
+            // フォーカス外れたら少し遅延して閉じる（クリックを拾うため）
+            input.addEventListener("blur", function() {
+                setTimeout(hide, 150);
+            });
+
+            // ESC で閉じる
+            input.addEventListener("keydown", function(e) {
+                if (e.key === "Escape") {
+                    hide();
+                    input.blur();
+                }
+            });
+        })();
     </script>
+
+    <%@ include file="/WEB-INF/jsp/parts/cookie_banner.jspf" %>
 </body>
 </html>

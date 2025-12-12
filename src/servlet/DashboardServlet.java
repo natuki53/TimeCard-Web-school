@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 import dao.AttendanceDAO;
@@ -46,6 +47,10 @@ public class DashboardServlet extends HttpServlet {
         
         // 最近の勤怠履歴を取得（直近5日分）
         List<Attendance> recentAttendances = attendanceDAO.findRecentByUserId(loginUser.getId(), 5);
+
+        // 今月の勤怠状況を取得（全グループ混在、直近10件）
+        YearMonth ym = YearMonth.now();
+        List<Attendance> thisMonthAttendances = attendanceDAO.findByUserIdAndMonthAllGroups(loginUser.getId(), ym.getYear(), ym.getMonthValue(), 10);
         
         // グループ情報を取得
         GroupDAO groupDAO = new GroupDAO();
@@ -62,6 +67,9 @@ public class DashboardServlet extends HttpServlet {
         // リクエストスコープに設定
         request.setAttribute("todayAttendance", todayAttendance);
         request.setAttribute("recentAttendances", recentAttendances);
+        request.setAttribute("thisMonthAttendances", thisMonthAttendances);
+        request.setAttribute("thisMonthYear", ym.getYear());
+        request.setAttribute("thisMonthMonth", ym.getMonthValue());
         request.setAttribute("adminGroups", adminGroups);
         request.setAttribute("memberGroups", memberGroups);
         

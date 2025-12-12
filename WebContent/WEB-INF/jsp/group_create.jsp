@@ -18,6 +18,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>グループ作成 - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
+    <script defer src="<%= request.getContextPath() %>/js/cookie_banner.js"></script>
 </head>
 <body class="with-header">
     <!-- ヘッダー -->
@@ -29,6 +30,7 @@
             <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
             <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
+            <a href="<%= request.getContextPath() %>/groups">グループ</a>
         </nav>
         
         <div class="header-user">
@@ -49,6 +51,7 @@
         <a href="<%= request.getContextPath() %>/dashboard">ダッシュボード</a>
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
         <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
+        <a href="<%= request.getContextPath() %>/groups">グループ</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>
@@ -103,5 +106,7 @@
             menu.classList.toggle('show');
         }
     </script>
+
+    <%@ include file="/WEB-INF/jsp/parts/cookie_banner.jspf" %>
 </body>
 </html>

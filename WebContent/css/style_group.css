@@ -1,0 +1,397 @@
+@charset "UTF-8";
+
+/* =========================
+  Group pages (manage/info/attendance)
+========================= */
+
+/* グループ管理スタイル */
+.group-info-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #3498db;
+}
+
+.group-info-section h2 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.group-info-section .group-description {
+    color: #7f8c8d;
+    line-height: 1.5;
+}
+
+.add-member-form .inline-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.add-member-form .inline-form label {
+    min-width: 150px;
+    font-weight: 600;
+}
+
+.add-member-form .inline-form input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* オートコンプリート（グループメンバー追加） */
+.autocomplete {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.autocomplete .autocomplete-list {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 50;
+    max-height: 260px;
+    overflow: auto;
+    padding: 6px;
+}
+
+.autocomplete .autocomplete-item {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    padding: 10px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.autocomplete .autocomplete-item:hover,
+.autocomplete .autocomplete-item:focus {
+    background: #f3f7ff;
+    outline: none;
+}
+
+.help-text {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #17a2b8;
+}
+
+.help-text p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.action-buttons {
+    margin-bottom: 1rem;
+    text-align: right;
+}
+
+.members-table {
+    overflow-x: auto;
+}
+
+.role-admin {
+    background-color: #e74c3c;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.role-member {
+    background-color: #3498db;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* グループ勤怠確認スタイル */
+.admin-actions {
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
+.group-attendance-table {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.member-attendance-section {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: #fafafa;
+}
+
+.member-name {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.no-attendance {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+    font-style: italic;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+.access-restricted {
+    text-align: center;
+    padding: 2rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+.restriction-message {
+    color: #856404;
+    font-weight: 600;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.member-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    padding: 0.5rem 1rem;
+    background-color: white;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    border: 1px solid #e0e0e0;
+}
+
+/* グループ詳細ページスタイル */
+.group-header {
+    border-left: 4px solid #3498db;
+    padding-left: 1rem;
+}
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.group-title h2 {
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+.user-role {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.admin-badge {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.member-badge {
+    background-color: #3498db;
+    color: white;
+}
+
+.group-description-section {
+    margin: 1.5rem 0;
+}
+
+.group-description-section h3 {
+    color: #34495e;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.group-description {
+    color: #7f8c8d;
+    line-height: 1.5;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+}
+
+.group-meta {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meta-label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.meta-value {
+    color: #7f8c8d;
+}
+
+.action-buttons-grid {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.member-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #fafafa;
+    transition: box-shadow 0.3s;
+}
+
+.member-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.detail-value {
+    font-size: 0.9rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.admin-info {
+    border-left: 4px solid #e74c3c;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.info-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+}
+
+.info-card h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.info-card p {
+    color: #7f8c8d;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .member-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .stat-item {
+        text-align: center;
+    }
+    .admin-actions {
+        text-align: center;
+    }
+    .group-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .group-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .action-buttons-grid {
+        flex-direction: column;
+    }
+    .members-grid {
+        grid-template-columns: 1fr;
+    }
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+
+

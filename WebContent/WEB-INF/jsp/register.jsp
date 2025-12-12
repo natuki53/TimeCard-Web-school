@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新規登録 - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
+    <script defer src="<%= request.getContextPath() %>/js/cookie_banner.js"></script>
 </head>
 <body class="with-header">
     <!-- シンプルヘッダー（ロゴのみ） -->
@@ -47,6 +48,8 @@
             <a href="<%= request.getContextPath() %>/login" class="btn btn-secondary">ログイン画面に戻る</a>
         </div>
     </div>
+
+    <%@ include file="/WEB-INF/jsp/parts/cookie_banner.jspf" %>
 </body>
 </html>
 

@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import model.User;
 
@@ -181,6 +183,62 @@ public class UserDAO {
         
         // ユーザーが見つからない場合はnullを返す
         return null;
+    }
+
+    /**
+     * ログインID（部分一致）でユーザー候補を検索（グループ既存メンバーは除外）
+     * - グループ管理画面のオートコンプリート用途
+     * @param query 入力文字列
+     * @param groupId 対象グループID
+     * @param limit 最大件数（1以上推奨）
+     * @return ユーザー候補（id, loginId, nameのみ設定）
+     */
+    public List<User> findSuggestionsByLoginId(String query, int groupId, int limit) {
+        List<User> users = new ArrayList<>();
+
+        if (query == null) return users;
+        String q = query.trim();
+        if (q.isEmpty()) return users;
+        if (limit <= 0) limit = 10;
+
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+
+        // login_id 部分一致 + 既に group_members にいる人を除外
+        // 例: "ab" -> "%ab%"
+        String like = "%" + q + "%";
+        String sql = "SELECT u.id, u.login_id, u.name "
+                   + "FROM users u "
+                   + "LEFT JOIN group_members gm ON gm.group_id = ? AND gm.user_id = u.id "
+                   + "WHERE gm.user_id IS NULL AND u.login_id LIKE ? "
+                   + "ORDER BY (u.login_id = ?) DESC, u.login_id ASC "
+                   + "LIMIT ?";
+
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, groupId);
+            ps.setString(2, like);
+            ps.setString(3, q);
+            ps.setInt(4, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setId(rs.getInt("id"));
+                    u.setLoginId(rs.getString("login_id"));
+                    u.setName(rs.getString("name"));
+                    users.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
     }
 }
 

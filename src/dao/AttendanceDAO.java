@@ -541,11 +541,17 @@ public class AttendanceDAO {
         // データベースに接続して勤怠履歴を取得
         try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
             // 最近の勤怠履歴を取得するSQL文（日付降順）
-            String sql = "SELECT id, user_id, group_id, work_date, start_time, end_time, prev_start_time, prev_end_time, "
-                        + "is_cancelled, cancelled_by_admin, "
-                        + "is_corrected, corrected_by_admin " +
-                        "FROM attendance WHERE user_id = ? " +
-                        "ORDER BY work_date DESC LIMIT ?";
+            // - group_id はNULLの場合があるため LEFT JOIN
+            // - 表示用に group_name を取得（NULLなら「グループなし」）
+            String sql = "SELECT a.id, a.user_id, a.group_id, "
+                        + "COALESCE(g.name, 'グループなし') AS group_name, "
+                        + "a.work_date, a.start_time, a.end_time, a.prev_start_time, a.prev_end_time, "
+                        + "a.is_cancelled, a.cancelled_by_admin, "
+                        + "a.is_corrected, a.corrected_by_admin "
+                        + "FROM attendance a "
+                        + "LEFT JOIN groups g ON a.group_id = g.id "
+                        + "WHERE a.user_id = ? "
+                        + "ORDER BY a.work_date DESC, a.id DESC LIMIT ?";
             PreparedStatement ps = conn.prepareStatement(sql);
             
             // SQL文のプレースホルダーに値を設定
@@ -560,6 +566,7 @@ public class AttendanceDAO {
                 attendance.setId(rs.getInt("id"));
                 attendance.setUserId(rs.getInt("user_id"));
                 attendance.setGroupId((Integer) rs.getObject("group_id"));
+                attendance.setGroupName(rs.getString("group_name"));
                 attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
                 attendance.setStartTime(rs.getTime("start_time") != null ? rs.getTime("start_time").toLocalTime() : null);
                 attendance.setEndTime(rs.getTime("end_time") != null ? rs.getTime("end_time").toLocalTime() : null);
@@ -576,6 +583,71 @@ public class AttendanceDAO {
             e.printStackTrace();
         }
         
+        return attendanceList;
+    }
+
+    /**
+     * ユーザーの指定月の勤怠履歴を取得（全グループ混在）
+     * - group_id=NULL も含む
+     * - 表示用に group_name を付与
+     * @param userId ユーザーID
+     * @param year 年
+     * @param month 月
+     * @param limit 最大件数（0以下なら無制限）
+     */
+    public List<Attendance> findByUserIdAndMonthAllGroups(int userId, int year, int month, int limit) {
+        List<Attendance> attendanceList = new ArrayList<>();
+
+        // JDBCドライバをロード
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+            String sql = "SELECT a.id, a.user_id, a.group_id, "
+                       + "COALESCE(g.name, 'グループなし') AS group_name, "
+                       + "a.work_date, a.start_time, a.end_time, a.prev_start_time, a.prev_end_time, "
+                       + "a.is_cancelled, a.cancelled_by_admin, "
+                       + "a.is_corrected, a.corrected_by_admin "
+                       + "FROM attendance a "
+                       + "LEFT JOIN groups g ON a.group_id = g.id "
+                       + "WHERE a.user_id = ? AND YEAR(a.work_date) = ? AND MONTH(a.work_date) = ? "
+                       + "ORDER BY a.work_date DESC, a.id DESC";
+            if (limit > 0) {
+                sql += " LIMIT ?";
+            }
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ps.setInt(2, year);
+            ps.setInt(3, month);
+            if (limit > 0) {
+                ps.setInt(4, limit);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Attendance attendance = new Attendance();
+                attendance.setId(rs.getInt("id"));
+                attendance.setUserId(rs.getInt("user_id"));
+                attendance.setGroupId((Integer) rs.getObject("group_id"));
+                attendance.setGroupName(rs.getString("group_name"));
+                attendance.setWorkDate(rs.getDate("work_date").toLocalDate());
+                attendance.setStartTime(rs.getTime("start_time") != null ? rs.getTime("start_time").toLocalTime() : null);
+                attendance.setEndTime(rs.getTime("end_time") != null ? rs.getTime("end_time").toLocalTime() : null);
+                attendance.setPrevStartTime(rs.getTime("prev_start_time") != null ? rs.getTime("prev_start_time").toLocalTime() : null);
+                attendance.setPrevEndTime(rs.getTime("prev_end_time") != null ? rs.getTime("prev_end_time").toLocalTime() : null);
+                attendance.setCancelled(rs.getInt("is_cancelled") == 1);
+                attendance.setCancelledByAdmin(rs.getInt("cancelled_by_admin") == 1);
+                attendance.setCorrected(rs.getInt("is_corrected") == 1);
+                attendance.setCorrectedByAdmin(rs.getInt("corrected_by_admin") == 1);
+                attendanceList.add(attendance);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return attendanceList;
     }
     
