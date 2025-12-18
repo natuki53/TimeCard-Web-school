@@ -11,13 +11,8 @@
     <div class="container">
         <h1>新規登録</h1>
         
-        <!-- TODO: エラーメッセージ表示 -->
-        <!-- 間違い: ErrorMessageクラスが存在しない（Stringであるべき） -->
-        <!--<% ErrorMessage errorMessage = (ErrorMessage)request.getAttribute("errorMessage");%>
-        <% if(errorMessage != null){%>
-        	<p><%= errorMessage %> </p>
-        <%} %>-->
-        <!-- 正しい: -->
+        
+        
         <% String errorMessage = (String) request.getAttribute("errorMessage"); %>
         <% if (errorMessage != null) { %>
             <p style="color: red;"><%= errorMessage %></p>
