@@ -83,6 +83,19 @@ mvn clean package
 
 または、IDE（Eclipse、IntelliJ IDEAなど）から直接実行することもできます。
 
+## アップロード（アイコン/添付）の永続化（本番/Docker向け）
+
+このアプリはデフォルトで `catalina.base/timecard_uploads` にアップロードを保存しますが、
+Docker運用では **コンテナ再起動で消える**可能性があります。
+
+永続化したい場合は、環境変数またはシステムプロパティで保存先を固定し、
+そのディレクトリを **volume** としてホストにマウントしてください。
+
+- **環境変数**: `TIMECARD_UPLOAD_DIR=/data/timecard_uploads`
+- **システムプロパティ**: `-Dtimecard.upload.dir=/data/timecard_uploads`
+
+サンプル: `docker-compose.prod.example.yml` を参照してください。
+
 ## URL一覧
 
 | URL | 説明 |

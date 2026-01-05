@@ -11,7 +11,6 @@
 @import url("./style_group.css");
 @import url("./style_chat.css");
 @import url("./style_profile.css");
-/* 通知CSSは表示崩れ時のキャッシュ対策でバージョン付与 */
-@import url("./style_notify.css?v=20260105");
+@import url("./style_notify.css");
 
 

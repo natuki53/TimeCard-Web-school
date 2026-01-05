@@ -22,14 +22,7 @@
     const id = "notifyInlineStyle";
     if (document.getElementById(id)) return;
 
-    // 既存CSSが効いているなら注入しない
-    const tmp = document.createElement("div");
-    tmp.className = "notify-toasts";
-    tmp.style.display = "none";
-    document.body.appendChild(tmp);
-    const pos = window.getComputedStyle(tmp).position;
-    tmp.remove();
-    if (pos === "fixed") return;
+    // 本番環境で別CSSに上書きされるケースがあるため、常に通知用CSSを注入して挙動を固定する
 
     const style = document.createElement("style");
     style.id = id;

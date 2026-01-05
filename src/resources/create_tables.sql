@@ -199,18 +199,21 @@ CREATE TABLE IF NOT EXISTS remember_tokens (
     INDEX idx_expires_at (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- テスト用ユーザー（パスワード: test123）
--- 注意: 旧データ互換のため、ここでは平文が入っています。ログイン成功時に bcrypt ハッシュへ自動移行されます。
--- secret_answer_hash も同様に平文で入れてあります（初回の再設定成功時に bcrypt へ自動移行されます）。
+-- テスト用ユーザー
+-- パスワード/秘密の質問の答えは bcrypt ハッシュを格納しています。
 INSERT INTO users (login_id, password_hash, secret_question, secret_answer_hash, name) VALUES
-('test_user', 'test123', '初めて飼ったペットの名前は？', 'pochi', 'テストユーザー'),
-('admin_user', 'admin123', '生まれた町（市区町村）は？', 'tokyo', '管理者ユーザー'),
-('member1', 'member123', '好きな食べ物は？', 'ramen', 'メンバー1'),
-('member2', 'member123', '母親の旧姓は？', 'sato', 'メンバー2'),
-('member3', 'member123', '初めて行った海外の国は？', 'korea', 'メンバー3'),
-('member4', 'member123', '小学校の名前は？', 'minami', 'メンバー4'),
-('manager1', 'manager123', '好きな色は？', 'blue', 'マネージャー1')
-ON DUPLICATE KEY UPDATE name=name;
+('test_user',  '$2a$12$znB77e9W2YF8wbSMomfbU.fghMsyQf7Si44bWkkXAsNYZ14NOXeFa', '初めて飼ったペットの名前は？', '$2a$12$J33QjeO1TS/q18LHOuvAf.rIv15SQRFK7N90L0IGnsOPtiGRqpsXu', 'テストユーザー'),
+('admin_user', '$2a$12$oRMKfEIaqK1zstji/gO8iehRW.MODBsu.7/qYP8BHKBErCyIOJQLO', '生まれた町（市区町村）は？',     '$2a$12$asurRfzh2c/noTnZ7NIp4uHhvE791DFpcnoRHwqIiSOW.epz/bbsS', '管理者ユーザー'),
+('member1',    '$2a$12$0Ijc/xTiyIKpuh0lXFVm9.rS1o30yn9f/pThqX8lHEkjtbGERqmX.', '好きな食べ物は？',             '$2a$12$9rNbx/sOZUkpI9xiGa2dIOBS7N11yyfQij21yvP3QokfPiWINYhci', 'メンバー1'),
+('member2',    '$2a$12$WOykBuAJBTpaUztjFmSaq.PJRibkvCSEc0/ezWscAnODBADAdL28S', '母親の旧姓は？',               '$2a$12$DvN4aCFXFbUAMvM1dIUYMOWKq/PratqBrqC.N6VK5aVjlB7BoKz16', 'メンバー2'),
+('member3',    '$2a$12$/hC5LDY0tjFiQcwogPrmzegXf4yAKwVPZn7qAAoUzexpwb.UF9Qte', '初めて行った海外の国は？',     '$2a$12$t0cGT1Em8.ucQTPP7wIAO..UKxe36yJE64zkgbFARScyYsIqAxLgq', 'メンバー3'),
+('member4',    '$2a$12$ke/WzPTExVKo2Eq3MAhtSOFwHnBa2s9NLqX5G/hm.FS94CH.gGVdW', '小学校の名前は？',             '$2a$12$74NWiG1kAsxcuQPlP9g/H.B5n3b.D6npE0hHxoWARiwWe26V3htIm', 'メンバー4'),
+('manager1',   '$2a$12$BDDqBjTg9NBQYlA/AJVCeukFaKfOErRFLJKjJZWtceyoA.gtpIpw.', '好きな色は？',                 '$2a$12$YRiykRP5YFe.NlOpKz/KBO6JPxz6m81zdfKKgF0.r/QPIK.c1UQxC', 'マネージャー1')
+ON DUPLICATE KEY UPDATE
+    password_hash = VALUES(password_hash),
+    secret_question = VALUES(secret_question),
+    secret_answer_hash = VALUES(secret_answer_hash),
+    name = VALUES(name);
 
 -- テスト用グループ
 INSERT INTO `groups` (name, description, admin_user_id) VALUES

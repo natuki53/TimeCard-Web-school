@@ -50,7 +50,7 @@ public class User {
     public String getSecretAnswerHash() {
         return secretAnswerHash;
     }
-
+    
     public String getName() {
         return name;
     }

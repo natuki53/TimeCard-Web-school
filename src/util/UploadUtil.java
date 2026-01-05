@@ -15,11 +15,26 @@ public class UploadUtil {
     /**
      * 保存先ディレクトリを返す（存在しなければ作る）
      * 優先順位:
+     * 0) 環境変数 TIMECARD_UPLOAD_DIR / システムプロパティ timecard.upload.dir
      * 1) catalina.base（Tomcat）配下
      * 2) webapp の /uploads 実体パス
      * 3) java.io.tmpdir
      */
     public static File getUploadDir(ServletContext ctx) {
+        // 明示指定（Docker等で永続Volumeに向けたい場合）
+        String explicit = System.getProperty("timecard.upload.dir");
+        if (explicit == null || explicit.trim().isEmpty()) {
+            explicit = System.getenv("TIMECARD_UPLOAD_DIR");
+        }
+        if (explicit != null && !explicit.trim().isEmpty()) {
+            File d = new File(explicit.trim());
+            if (!d.exists()) d.mkdirs();
+            if (d.exists() && d.isDirectory() && d.canWrite()) {
+                return d;
+            }
+            // 指定はあるが使えない場合は既存ロジックへフォールバック
+        }
+
         // Tomcatがある場合
         String catalinaBase = System.getProperty("catalina.base");
         File dir;
