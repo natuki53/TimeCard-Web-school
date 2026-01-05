@@ -3,20 +3,18 @@ package dao;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Base64;
 
+import util.DBUtil;
+
 /**
  * ログイン保持（Remember me）トークンDAO
  */
 public class RememberTokenDAO {
-    private final String JDBC_URL = "jdbc:mysql://localhost:3306/timecard_db?useSSL=false&serverTimezone=Asia/Tokyo&characterEncoding=UTF-8";
-    private final String DB_USER = "root";
-    private final String DB_PASS = "";
 
     public static class RememberToken {
         public final int userId;
@@ -66,7 +64,7 @@ public class RememberTokenDAO {
         LocalDateTime expiresAt = LocalDateTime.now().plusDays(days);
 
         String sql = "INSERT INTO remember_tokens(user_id, token_hash, expires_at) VALUES(?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, hash);
@@ -94,7 +92,7 @@ public class RememberTokenDAO {
 
         String hash = sha256Hex(rawToken.trim());
         String sql = "SELECT user_id FROM remember_tokens WHERE token_hash = ? AND expires_at > NOW()";
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, hash);
             try (ResultSet rs = ps.executeQuery()) {
@@ -123,7 +121,7 @@ public class RememberTokenDAO {
 
         String hash = sha256Hex(rawToken.trim());
         String sql = "DELETE FROM remember_tokens WHERE token_hash = ?";
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, hash);
             int result = ps.executeUpdate();

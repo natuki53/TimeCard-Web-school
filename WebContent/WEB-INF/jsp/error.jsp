@@ -15,6 +15,9 @@
     <title>エラー - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
     <script defer src="<%= request.getContextPath() %>/js/cookie_banner.js"></script>
+    <% if (loginUser != null) { %>
+        <script defer src="<%= request.getContextPath() %>/js/notifications.js"></script>
+    <% } %>
 </head>
 <body class="<%= loginUser != null ? "with-header" : "" %>">
     <% if (loginUser != null) { %>
@@ -27,6 +30,7 @@
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
             <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
             <a href="<%= request.getContextPath() %>/groups">グループ</a>
+            <a href="<%= request.getContextPath() %>/dm">DM</a>
         </nav>
         <div class="header-user">
             <span class="header-user-name"><%= loginUser.getName() %>さん</span>
@@ -41,6 +45,7 @@
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
         <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         <a href="<%= request.getContextPath() %>/groups">グループ</a>
+        <a href="<%= request.getContextPath() %>/dm">DM</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>

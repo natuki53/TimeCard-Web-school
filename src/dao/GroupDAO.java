@@ -1,7 +1,6 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,15 +11,12 @@ import java.util.List;
 import model.Group;
 import model.GroupMember;
 
+import util.DBUtil;
+
 /**
  * グループ関連のデータアクセスオブジェクト
  */
 public class GroupDAO {
-    
-    // データベース接続情報の定数定義
-    private final String JDBC_URL = "jdbc:mysql://localhost:3306/timecard_db?useSSL=false&serverTimezone=Asia/Tokyo&characterEncoding=UTF-8";
-    private final String DB_USER = "root";
-    private final String DB_PASS = "";
     
     /**
      * グループを作成する
@@ -28,7 +24,7 @@ public class GroupDAO {
      * @return 作成されたグループ（IDが設定される）
      */
     public Group createGroup(Group group) {
-        String sql = "INSERT INTO groups (name, description, admin_user_id) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO `groups` (name, description, admin_user_id) VALUES (?, ?, ?)";
         
         // JDBCドライバをロード
         try {
@@ -37,7 +33,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             stmt.setString(1, group.getName());
@@ -71,7 +67,7 @@ public class GroupDAO {
      */
     public List<Group> findGroupsByAdmin(int adminUserId) {
         List<Group> groups = new ArrayList<>();
-        String sql = "SELECT * FROM groups WHERE admin_user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM `groups` WHERE admin_user_id = ? AND is_deleted = 0 ORDER BY created_at DESC";
         
         // JDBCドライバをロード
         try {
@@ -80,7 +76,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, adminUserId);
@@ -92,6 +88,10 @@ public class GroupDAO {
                     group.setName(rs.getString("name"));
                     group.setDescription(rs.getString("description"));
                     group.setAdminUserId(rs.getInt("admin_user_id"));
+                    group.setDeleted(rs.getInt("is_deleted") == 1);
+                    if (rs.getTimestamp("deleted_at") != null) {
+                        group.setDeletedAt(rs.getTimestamp("deleted_at").toLocalDateTime());
+                    }
                     group.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                     group.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
                     groups.add(group);
@@ -111,9 +111,9 @@ public class GroupDAO {
      */
     public List<Group> findGroupsByUser(int userId) {
         List<Group> groups = new ArrayList<>();
-        String sql = "SELECT DISTINCT g.* FROM groups g "
+        String sql = "SELECT DISTINCT g.* FROM `groups` g "
                    + "LEFT JOIN group_members gm ON g.id = gm.group_id "
-                   + "WHERE g.admin_user_id = ? OR gm.user_id = ? "
+                   + "WHERE g.is_deleted = 0 AND (g.admin_user_id = ? OR gm.user_id = ?) "
                    + "ORDER BY g.created_at DESC";
 
         // JDBCドライバをロード
@@ -123,7 +123,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
@@ -136,6 +136,10 @@ public class GroupDAO {
                     group.setName(rs.getString("name"));
                     group.setDescription(rs.getString("description"));
                     group.setAdminUserId(rs.getInt("admin_user_id"));
+                    group.setDeleted(rs.getInt("is_deleted") == 1);
+                    if (rs.getTimestamp("deleted_at") != null) {
+                        group.setDeletedAt(rs.getTimestamp("deleted_at").toLocalDateTime());
+                    }
                     group.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                     group.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
                     groups.add(group);
@@ -154,9 +158,9 @@ public class GroupDAO {
      */
     public List<Group> findGroupsByMember(int userId) {
         List<Group> groups = new ArrayList<>();
-        String sql = "SELECT g.* FROM groups g " +
+        String sql = "SELECT g.* FROM `groups` g " +
                     "INNER JOIN group_members gm ON g.id = gm.group_id " +
-                    "WHERE gm.user_id = ? ORDER BY g.created_at DESC";
+                    "WHERE g.is_deleted = 0 AND gm.user_id = ? ORDER BY g.created_at DESC";
         
         // JDBCドライバをロード
         try {
@@ -165,7 +169,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, userId);
@@ -177,6 +181,10 @@ public class GroupDAO {
                     group.setName(rs.getString("name"));
                     group.setDescription(rs.getString("description"));
                     group.setAdminUserId(rs.getInt("admin_user_id"));
+                    group.setDeleted(rs.getInt("is_deleted") == 1);
+                    if (rs.getTimestamp("deleted_at") != null) {
+                        group.setDeletedAt(rs.getTimestamp("deleted_at").toLocalDateTime());
+                    }
                     group.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                     group.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
                     groups.add(group);
@@ -194,7 +202,7 @@ public class GroupDAO {
      * @return グループ情報
      */
     public Group findGroupById(int groupId) {
-        String sql = "SELECT * FROM groups WHERE id = ?";
+        String sql = "SELECT * FROM `groups` WHERE id = ? AND is_deleted = 0";
         
         // JDBCドライバをロード
         try {
@@ -203,7 +211,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -215,6 +223,10 @@ public class GroupDAO {
                     group.setName(rs.getString("name"));
                     group.setDescription(rs.getString("description"));
                     group.setAdminUserId(rs.getInt("admin_user_id"));
+                    group.setDeleted(rs.getInt("is_deleted") == 1);
+                    if (rs.getTimestamp("deleted_at") != null) {
+                        group.setDeletedAt(rs.getTimestamp("deleted_at").toLocalDateTime());
+                    }
                     group.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                     group.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
                     return group;
@@ -242,7 +254,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -269,7 +281,7 @@ public class GroupDAO {
         List<GroupMember> members = new ArrayList<>();
         String sql = "SELECT gm.*, u.name, u.login_id FROM group_members gm " +
                     "INNER JOIN users u ON gm.user_id = u.id " +
-                    "WHERE gm.group_id = ? ORDER BY gm.joined_at ASC";
+                    "WHERE gm.group_id = ? AND u.is_deleted = 0 ORDER BY gm.joined_at ASC";
         
         // JDBCドライバをロード
         try {
@@ -278,7 +290,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -317,7 +329,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -338,7 +350,7 @@ public class GroupDAO {
      * @return 管理者の場合true
      */
     public boolean isGroupAdmin(int groupId, int userId) {
-        String sql = "SELECT COUNT(*) FROM groups WHERE id = ? AND admin_user_id = ?";
+        String sql = "SELECT COUNT(*) FROM `groups` WHERE id = ? AND admin_user_id = ? AND is_deleted = 0";
         
         // JDBCドライバをロード
         try {
@@ -347,7 +359,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -371,7 +383,9 @@ public class GroupDAO {
      * @return メンバーの場合true
      */
     public boolean isGroupMember(int groupId, int userId) {
-        String sql = "SELECT COUNT(*) FROM group_members WHERE group_id = ? AND user_id = ?";
+        String sql = "SELECT COUNT(*) FROM group_members gm "
+                   + "INNER JOIN `groups` g ON g.id = gm.group_id "
+                   + "WHERE gm.group_id = ? AND gm.user_id = ? AND g.is_deleted = 0";
         
         // JDBCドライバをロード
         try {
@@ -380,7 +394,7 @@ public class GroupDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
         
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, groupId);
@@ -395,5 +409,52 @@ public class GroupDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * グループを論理削除
+     */
+    public boolean softDeleteGroup(int groupId, int adminUserId) {
+        String sql = "UPDATE `groups` SET is_deleted = 1, deleted_at = NOW() "
+                   + "WHERE id = ? AND admin_user_id = ? AND is_deleted = 0";
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, groupId);
+            stmt.setInt(2, adminUserId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 管理者が退会する際に、そのユーザーが管理するグループをまとめて論理削除する
+     */
+    public int softDeleteGroupsByAdmin(int adminUserId) {
+        String sql = "UPDATE `groups` SET is_deleted = 1, deleted_at = NOW() "
+                   + "WHERE admin_user_id = ? AND is_deleted = 0";
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("JDBCドライバを読み込めませんでした");
+        }
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, adminUserId);
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 }

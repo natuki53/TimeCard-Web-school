@@ -1,7 +1,6 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,13 +15,12 @@ import java.util.Map;
 import model.GroupAttachment;
 import model.GroupMessage;
 
+import util.DBUtil;
+
 /**
  * グループチャットDAO
  */
 public class GroupChatDAO {
-    private final String JDBC_URL = "jdbc:mysql://localhost:3306/timecard_db?useSSL=false&serverTimezone=Asia/Tokyo&characterEncoding=UTF-8";
-    private final String DB_USER = "root";
-    private final String DB_PASS = "";
 
     public GroupChatDAO() {
         try {
@@ -47,7 +45,7 @@ public class GroupChatDAO {
                       + "ORDER BY m.created_at DESC, m.id DESC "
                       + "LIMIT ?";
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(msgSql)) {
 
             ps.setInt(1, groupId);
@@ -86,6 +84,58 @@ public class GroupChatDAO {
         return messages;
     }
 
+    /**
+     * 指定IDより新しいメッセージを取得（古い→新しい順）
+     */
+    public List<GroupMessage> findMessagesAfterId(int groupId, int afterId, int limit) {
+        List<GroupMessage> messages = new ArrayList<>();
+        if (limit <= 0) limit = 50;
+        if (afterId < 0) afterId = 0;
+
+        String msgSql = "SELECT m.id, m.group_id, m.user_id, m.content, m.created_at, "
+                      + "u.name AS user_name, u.login_id AS user_login_id "
+                      + "FROM group_messages m "
+                      + "INNER JOIN users u ON u.id = m.user_id "
+                      + "WHERE m.group_id = ? AND m.id > ? "
+                      + "ORDER BY m.id ASC "
+                      + "LIMIT ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(msgSql)) {
+
+            ps.setInt(1, groupId);
+            ps.setInt(2, afterId);
+            ps.setInt(3, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    GroupMessage m = new GroupMessage();
+                    m.setId(rs.getInt("id"));
+                    m.setGroupId(rs.getInt("group_id"));
+                    m.setUserId(rs.getInt("user_id"));
+                    m.setContent(rs.getString("content"));
+                    Timestamp ts = rs.getTimestamp("created_at");
+                    m.setCreatedAt(ts != null ? ts.toLocalDateTime() : (LocalDateTime) null);
+                    m.setUserName(rs.getString("user_name"));
+                    m.setUserLoginId(rs.getString("user_login_id"));
+                    messages.add(m);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return messages;
+        }
+
+        if (!messages.isEmpty()) {
+            Map<Integer, List<GroupAttachment>> byMessageId = findAttachmentsByMessageIds(messages);
+            for (GroupMessage m : messages) {
+                List<GroupAttachment> atts = byMessageId.get(m.getId());
+                if (atts != null) m.setAttachments(atts);
+            }
+        }
+
+        return messages;
+    }
+
     private Map<Integer, List<GroupAttachment>> findAttachmentsByMessageIds(List<GroupMessage> messages) {
         Map<Integer, List<GroupAttachment>> map = new HashMap<>();
         if (messages == null || messages.isEmpty()) return map;
@@ -103,7 +153,7 @@ public class GroupChatDAO {
                    + "WHERE a.message_id IN (" + in + ") "
                    + "ORDER BY a.id ASC";
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             for (int i = 0; i < messages.size(); i++) {
                 ps.setInt(i + 1, messages.get(i).getId());
@@ -136,7 +186,7 @@ public class GroupChatDAO {
      */
     public Integer insertMessage(int groupId, int userId, String content) {
         String sql = "INSERT INTO group_messages(group_id, user_id, content) VALUES(?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, groupId);
             ps.setInt(2, userId);
@@ -155,7 +205,7 @@ public class GroupChatDAO {
     public boolean insertAttachment(int messageId, String originalFilename, String storedFilename, String mimeType, long sizeBytes) {
         String sql = "INSERT INTO group_message_attachments(message_id, original_filename, stored_filename, mime_type, size_bytes) "
                    + "VALUES(?, ?, ?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, messageId);
             ps.setString(2, originalFilename);
@@ -178,7 +228,7 @@ public class GroupChatDAO {
                    + "FROM group_message_attachments a "
                    + "INNER JOIN group_messages m ON m.id = a.message_id "
                    + "WHERE a.id = ?";
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS);
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, attachmentId);
             try (ResultSet rs = ps.executeQuery()) {

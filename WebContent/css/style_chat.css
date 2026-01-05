@@ -163,7 +163,8 @@
 
 .chat-compose {
     display: flex;
-    align-items: center;
+    /* 入力欄が伸びてもボタンが下に揃うようにする */
+    align-items: flex-end;
     gap: 10px;
 }
 
@@ -200,11 +201,13 @@
     min-width: 220px;
     padding: 10px;
     border: 1px solid #ddd;
-    border-radius: 999px;
+    /* 複数行対応（最大10行）なのでpillではなく角丸に */
+    border-radius: 10px;
     font-size: 14px;
     resize: none;
-    height: 40px;
+    min-height: 40px;
     line-height: 18px;
+    overflow-y: hidden;
 }
 
 .chat-compose-input:focus {

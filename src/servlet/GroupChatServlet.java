@@ -22,6 +22,7 @@ import model.GroupMessage;
 import model.User;
 import util.AuthUtil;
 import util.UploadUtil;
+import util.DBUtil;
 
 /**
  * グループチャット
@@ -83,6 +84,20 @@ public class GroupChatServlet extends HttpServlet {
 
         GroupChatDAO chatDAO = new GroupChatDAO();
         List<GroupMessage> messages = chatDAO.findRecentMessages(groupId, 200);
+
+        // 既読更新（通知の重複防止）
+        try (java.sql.Connection conn = DBUtil.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(
+                     "INSERT INTO group_last_read(user_id, group_id, last_read_at) VALUES(?, ?, NOW()) " +
+                     "ON DUPLICATE KEY UPDATE last_read_at = NOW()"
+             )) {
+            ps.setInt(1, loginUser.getId());
+            ps.setInt(2, groupId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            // 読み取り失敗でもチャット自体は表示できるようにする
+            log("group_last_read update failed", e);
+        }
 
         request.setAttribute("group", group);
         request.setAttribute("messages", messages);

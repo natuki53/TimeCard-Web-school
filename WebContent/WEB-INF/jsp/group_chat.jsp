@@ -30,6 +30,7 @@
     <title>グループチャット - <%= group != null ? group.getName() : "" %> - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
     <script defer src="<%= request.getContextPath() %>/js/cookie_banner.js"></script>
+    <script defer src="<%= request.getContextPath() %>/js/notifications.js"></script>
 </head>
 <body class="with-header">
     <!-- ヘッダー -->
@@ -42,6 +43,7 @@
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
             <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
             <a href="<%= request.getContextPath() %>/groups">グループ</a>
+            <a href="<%= request.getContextPath() %>/dm">DM</a>
         </nav>
 
         <div class="header-user">
@@ -59,6 +61,7 @@
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
         <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         <a href="<%= request.getContextPath() %>/groups">グループ</a>
+        <a href="<%= request.getContextPath() %>/dm">DM</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>
@@ -83,7 +86,7 @@
         <div class="chat-messages" id="chatMessages">
             <% if (messages != null && !messages.isEmpty()) { %>
                 <% for (GroupMessage m : messages) { %>
-                    <div class="chat-message">
+                    <div class="chat-message" data-msgid="<%= m.getId() %>">
                         <div class="chat-meta">
                             <span class="chat-author"><%= m.getUserName() %></span>
                             <span class="chat-loginid">@<%= m.getUserLoginId() %></span>
@@ -149,7 +152,7 @@
 
             <div class="chat-compose" id="chatCompose">
                 <label for="chatFiles" class="chat-plus" title="ファイルを添付">＋</label>
-                <textarea id="chatContent" class="chat-compose-input" name="content" rows="2"
+                <textarea id="chatContent" class="chat-compose-input" name="content" rows="1"
                           placeholder="メッセージを送信" maxlength="5000"></textarea>
                 <button type="submit" class="btn btn-primary chat-send">送信</button>
             </div>
@@ -169,6 +172,131 @@
             if (el) el.scrollTop = el.scrollHeight;
         })();
 
+        // リアルタイム更新（ポーリング）
+        (function() {
+            var container = document.getElementById('chatMessages');
+            if (!container) return;
+            var groupId = parseInt("<%= group != null ? group.getId() : 0 %>", 10) || 0;
+            if (!groupId) return;
+
+            function getLastId() {
+                var nodes = container.querySelectorAll('.chat-message[data-msgid]');
+                if (!nodes || nodes.length === 0) return 0;
+                var last = nodes[nodes.length - 1];
+                var v = last.getAttribute('data-msgid');
+                var n = parseInt(v, 10);
+                return isFinite(n) ? n : 0;
+            }
+
+            function isNearBottom() {
+                // 60px以内なら「見ている」とみなして自動スクロール
+                return (container.scrollHeight - container.scrollTop - container.clientHeight) < 60;
+            }
+
+            function escapeHtml(s) {
+                if (s == null) return "";
+                return String(s)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            function fmtTime(iso) {
+                if (!iso) return "";
+                // LocalDateTime文字列 "2026-01-05T12:34:56" → "2026-01-05 12:34"
+                var t = String(iso).replace("T", " ");
+                return t.length >= 16 ? t.substring(0, 16) : t;
+            }
+
+            function formatBytes(bytes) {
+                var b = Number(bytes || 0);
+                if (b < 1024) return b + "B";
+                var kb = b / 1024.0;
+                if (kb < 1024) return kb.toFixed(1) + "KB";
+                var mb = kb / 1024.0;
+                if (mb < 1024) return mb.toFixed(1) + "MB";
+                var gb = mb / 1024.0;
+                return gb.toFixed(1) + "GB";
+            }
+
+            function buildAttachmentHtml(a) {
+                var url = escapeHtml(a.url || "");
+                var mime = escapeHtml(a.mimeType || "");
+                var name = escapeHtml(a.originalFileName || "");
+                var size = formatBytes(a.sizeBytes || 0);
+                var html = '';
+                html += '<div class="chat-attachment-row">';
+                html += '  <a class="chat-attachment" href="' + url + '" target="_blank" rel="noopener">';
+                html += '    <span class="att-name">' + name + '</span>';
+                html += '    <span class="att-size">(' + size + ')</span>';
+                html += '  </a>';
+                html += '  <a class="chat-attachment-download" href="' + url + '" data-mime="' + mime + '" data-filename="' + name + '" title="ダウンロード">↓</a>';
+                html += '</div>';
+
+                if (mime.indexOf("image/") === 0) {
+                    html += '<div class="chat-embed"><a href="' + url + '" target="_blank" rel="noopener">';
+                    html += '<img class="chat-image" src="' + url + '" alt="' + name + '"></a></div>';
+                } else if (mime.indexOf("video/") === 0) {
+                    html += '<div class="chat-embed"><video class="chat-video" controls preload="metadata" src="' + url + '"></video></div>';
+                } else if (mime.indexOf("audio/") === 0) {
+                    html += '<div class="chat-embed"><audio class="chat-audio" controls preload="metadata" src="' + url + '"></audio></div>';
+                }
+                return html;
+            }
+
+            function appendMessage(m) {
+                var html = '<div class="chat-message" data-msgid="' + m.id + '">';
+                html += '  <div class="chat-meta">';
+                html += '    <span class="chat-author">' + escapeHtml(m.userName || '') + '</span>';
+                html += '    <span class="chat-loginid">@' + escapeHtml(m.userLoginId || '') + '</span>';
+                html += '    <span class="chat-time">' + escapeHtml(fmtTime(m.createdAt || '')) + '</span>';
+                html += '  </div>';
+                var content = (m.content || "");
+                if (String(content).trim().length > 0) {
+                    html += '  <div class="chat-content">' + escapeHtml(content).replace(/\n/g, "<br>") + '</div>';
+                }
+                if (m.attachments && m.attachments.length > 0) {
+                    html += '  <div class="chat-attachments">';
+                    for (var i = 0; i < m.attachments.length; i++) {
+                        html += buildAttachmentHtml(m.attachments[i]);
+                    }
+                    html += '  </div>';
+                }
+                html += '</div>';
+                container.insertAdjacentHTML('beforeend', html);
+            }
+
+            var inFlight = false;
+            async function poll() {
+                if (document.hidden) return;
+                if (inFlight) return;
+                inFlight = true;
+                try {
+                    var lastId = getLastId();
+                    var url = "<%= request.getContextPath() %>/api/group/chat/messages?groupId=" + encodeURIComponent(groupId) + "&afterId=" + encodeURIComponent(lastId);
+                    var res = await fetch(url, { headers: { "Accept": "application/json" } });
+                    if (!res.ok) return;
+                    var items = await res.json();
+                    if (!items || items.length === 0) return;
+                    var stick = isNearBottom();
+                    // 「まだ投稿がありません」表示を消す
+                    var empty = container.querySelector('.no-records');
+                    if (empty) try { empty.remove(); } catch (e) {}
+                    for (var i = 0; i < items.length; i++) appendMessage(items[i]);
+                    if (stick) container.scrollTop = container.scrollHeight;
+                } catch (e) {
+                    // silent
+                } finally {
+                    inFlight = false;
+                }
+            }
+
+            poll();
+            setInterval(poll, 2000);
+        })();
+
         // 添付プレビュー（取り消し可能） + Ctrl+Vで貼り付け添付
         (function() {
             var fileInput = document.getElementById('chatFiles');
@@ -181,6 +309,35 @@
             var MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB
             var MAX_TOTAL_BYTES = MAX_FILE_BYTES * 6; // サーバ側 maxRequestSize と合わせる
             var toastTimer = null;
+
+            // 入力欄自動リサイズ（最大10行）
+            function autoResize() {
+                if (!textarea) return;
+                var cs = window.getComputedStyle(textarea);
+                var lh = parseFloat(cs.lineHeight || "18") || 18;
+                var pt = parseFloat(cs.paddingTop || "0") || 0;
+                var pb = parseFloat(cs.paddingBottom || "0") || 0;
+                var bt = parseFloat(cs.borderTopWidth || "0") || 0;
+                var bb = parseFloat(cs.borderBottomWidth || "0") || 0;
+                var minH = (lh * 1) + pt + pb + bt + bb;  // 初期1行
+                var maxH = (lh * 10) + pt + pb + bt + bb; // 最大10行
+
+                textarea.style.height = "auto";
+                var next = textarea.scrollHeight;
+                next = Math.max(minH, next);
+                if (next > maxH) {
+                    textarea.style.height = maxH + "px";
+                    textarea.style.overflowY = "auto";
+                } else {
+                    textarea.style.height = next + "px";
+                    textarea.style.overflowY = "hidden";
+                }
+            }
+            if (textarea) {
+                textarea.addEventListener('input', autoResize);
+                // 初期化（ブラウザが値を復元する場合がある）
+                setTimeout(autoResize, 0);
+            }
 
             function clearObjectUrls() {
                 if (!objectUrls || objectUrls.length === 0) return;

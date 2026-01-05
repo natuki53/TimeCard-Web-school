@@ -8,17 +8,26 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     login_id VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    secret_question VARCHAR(255) NOT NULL,
+    secret_answer_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
+    bio TEXT NULL,
+    dm_allowed TINYINT(1) NOT NULL DEFAULT 1,
+    icon_filename VARCHAR(255) NULL,
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    deleted_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_login_id (login_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- groups テーブル（グループ情報）
-CREATE TABLE IF NOT EXISTS groups (
+CREATE TABLE IF NOT EXISTS `groups` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     admin_user_id INT NOT NULL,
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    deleted_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -31,11 +40,73 @@ CREATE TABLE IF NOT EXISTS group_members (
     group_id INT NOT NULL,
     user_id INT NOT NULL,
     joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY uk_group_user (group_id, user_id),
     INDEX idx_group_id (group_id),
     INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- group_last_read テーブル（グループチャット既読管理）
+CREATE TABLE IF NOT EXISTS group_last_read (
+    user_id INT NOT NULL,
+    group_id INT NOT NULL,
+    last_read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, group_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
+    INDEX idx_group_last_read_group (group_id, last_read_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- dm_threads テーブル（DMスレッド：2人1組）
+-- user1_id < user2_id を満たす形で格納する想定（ペアの一意制約）
+CREATE TABLE IF NOT EXISTS dm_threads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user1_id INT NOT NULL,
+    user2_id INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_dm_pair (user1_id, user2_id),
+    INDEX idx_dm_user1 (user1_id),
+    INDEX idx_dm_user2 (user2_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- dm_messages テーブル（DMメッセージ）
+CREATE TABLE IF NOT EXISTS dm_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    thread_id INT NOT NULL,
+    sender_user_id INT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (thread_id) REFERENCES dm_threads(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_dm_thread_created (thread_id, created_at),
+    INDEX idx_dm_sender (sender_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- dm_message_attachments テーブル（DM添付ファイル）
+CREATE TABLE IF NOT EXISTS dm_message_attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id INT NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(120) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (message_id) REFERENCES dm_messages(id) ON DELETE CASCADE,
+    INDEX idx_dm_message_id (message_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- dm_last_read テーブル（DM既読管理）
+CREATE TABLE IF NOT EXISTS dm_last_read (
+    user_id INT NOT NULL,
+    thread_id INT NOT NULL,
+    last_read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, thread_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (thread_id) REFERENCES dm_threads(id) ON DELETE CASCADE,
+    INDEX idx_dm_last_read_thread (thread_id, last_read_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- attendance テーブル（勤怠情報）
@@ -63,12 +134,15 @@ CREATE TABLE IF NOT EXISTS attendance (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE SET NULL,
+    -- MySQL では ON DELETE SET NULL が通らない環境があるため、グループ削除は参照がある限り禁止(RESTRICT)
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE RESTRICT,
     FOREIGN KEY (cancelled_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (corrected_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     UNIQUE KEY uk_user_date_group (user_id, work_date, group_id_key),
     INDEX idx_user_id (user_id),
     INDEX idx_group_id (group_id),
+    INDEX idx_cancelled_by_user_id (cancelled_by_user_id),
+    INDEX idx_corrected_by_user_id (corrected_by_user_id),
     INDEX idx_work_date (work_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -92,7 +166,7 @@ CREATE TABLE IF NOT EXISTS group_messages (
     user_id INT NOT NULL,
     content TEXT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_group_id_created_at (group_id, created_at),
     INDEX idx_user_id (user_id)
@@ -126,19 +200,20 @@ CREATE TABLE IF NOT EXISTS remember_tokens (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- テスト用ユーザー（パスワード: test123）
--- パスワードは平文で保存（本来はハッシュ化推奨）
-INSERT INTO users (login_id, password_hash, name) VALUES
-('test_user', 'test123', 'テストユーザー'),
-('admin_user', 'admin123', '管理者ユーザー'),
-('member1', 'member123', 'メンバー1'),
-('member2', 'member123', 'メンバー2'),
-('member3', 'member123', 'メンバー3'),
-('member4', 'member123', 'メンバー4'),
-('manager1', 'manager123', 'マネージャー1')
+-- 注意: 旧データ互換のため、ここでは平文が入っています。ログイン成功時に bcrypt ハッシュへ自動移行されます。
+-- secret_answer_hash も同様に平文で入れてあります（初回の再設定成功時に bcrypt へ自動移行されます）。
+INSERT INTO users (login_id, password_hash, secret_question, secret_answer_hash, name) VALUES
+('test_user', 'test123', '初めて飼ったペットの名前は？', 'pochi', 'テストユーザー'),
+('admin_user', 'admin123', '生まれた町（市区町村）は？', 'tokyo', '管理者ユーザー'),
+('member1', 'member123', '好きな食べ物は？', 'ramen', 'メンバー1'),
+('member2', 'member123', '母親の旧姓は？', 'sato', 'メンバー2'),
+('member3', 'member123', '初めて行った海外の国は？', 'korea', 'メンバー3'),
+('member4', 'member123', '小学校の名前は？', 'minami', 'メンバー4'),
+('manager1', 'manager123', '好きな色は？', 'blue', 'マネージャー1')
 ON DUPLICATE KEY UPDATE name=name;
 
 -- テスト用グループ
-INSERT INTO groups (name, description, admin_user_id) VALUES
+INSERT INTO `groups` (name, description, admin_user_id) VALUES
 ('テストグループ1', 'テスト用のグループ1です', 2),
 ('テストグループ2', 'テスト用のグループ2です', 2),
 ('開発チーム', '開発部門のグループです', 7),
@@ -325,4 +400,3 @@ FROM attendance a
 WHERE a.user_id = 4 AND a.group_id = 1 AND a.work_date = CURDATE()
 LIMIT 1
 ON DUPLICATE KEY UPDATE break_start=VALUES(break_start), break_end=VALUES(break_end);
-

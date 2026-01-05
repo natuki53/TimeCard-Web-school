@@ -283,13 +283,17 @@ a:hover {
 
 /* ボタンスタイル */
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 10px 20px;
     text-decoration: none;
     border-radius: 4px;
     font-size: 16px;
     cursor: pointer;
     border: none;
+    line-height: 1.2;
+    vertical-align: middle;
     transition: background-color 0.3s;
 }
 
@@ -576,6 +580,87 @@ table tr:hover {
 .empty-state h3 {
     margin-bottom: 0.5rem;
     color: #2c3e50;
+}
+
+/* =========================
+  Modal / Profile UI
+========================= */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 2000;
+}
+
+.modal {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #2c3e50;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.modal-close:hover {
+    color: #2c3e50;
+}
+
+.modal-body {
+    padding: 16px;
+}
+
+.profile-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e0e0e0;
+    background: #f8f9fa;
+}
+
+.profile-name {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.profile-loginid {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin-top: 2px;
 }
 
 

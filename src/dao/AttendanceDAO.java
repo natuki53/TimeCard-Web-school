@@ -2,7 +2,6 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,15 +13,12 @@ import java.util.List;
 import model.Attendance;
 import model.AttendanceBreak;
 
+import util.DBUtil;
+
 /**
  * 勤怠DAOクラス（データベースアクセス）
  */
 public class AttendanceDAO {
-    
-    // データベース接続情報の定数定義
-	private final String JDBC_URL = "jdbc:mysql://localhost:3306/timecard_db?useSSL=false&serverTimezone=Asia/Tokyo&characterEncoding=UTF-8";
-	private final String DB_USER = "root";
-	private final String DB_PASS = "";
     
     /**
      * ユーザーID・日付・グループIDで勤怠を検索
@@ -40,7 +36,7 @@ public class AttendanceDAO {
 		}
         
         // データベースに接続して勤怠検索を実行
-		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+		try(Connection conn = DBUtil.getConnection()){
             // ユーザーIDと日付（＋グループID）で勤怠を検索するSQL文
             final String sql;
             if (groupId == null) {
@@ -123,7 +119,7 @@ public class AttendanceDAO {
 		}
         
         // データベースに接続して勤怠登録を実行
-		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+		try(Connection conn = DBUtil.getConnection()){
             // 新規勤怠を登録するSQL文（出勤時刻のみ登録）
             final String sql;
             if (attendance.getGroupId() == null) {
@@ -167,7 +163,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             final String sql;
             if (attendance.getGroupId() == null) {
                 sql = "INSERT INTO attendance(user_id, group_id, work_date, start_time, end_time, prev_start_time, prev_end_time, is_corrected, corrected_by_admin, corrected_by_user_id, corrected_at) "
@@ -211,7 +207,7 @@ public class AttendanceDAO {
 		}
         
         // データベースに接続して勤怠更新を実行
-		try(Connection conn = DriverManager.getConnection(JDBC_URL,DB_USER,DB_PASS)){
+		try(Connection conn = DBUtil.getConnection()){
             // 出勤時刻と退勤時刻を更新するSQL文
 			String sql = "UPDATE attendance SET start_time = ?, end_time = ? WHERE id = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
@@ -248,7 +244,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             // 修正前の値を prev_* に退避してから上書き
             String sql = "UPDATE attendance SET "
                        + "prev_start_time = start_time, prev_end_time = end_time, "
@@ -280,7 +276,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "SELECT COUNT(*) FROM attendance_breaks WHERE attendance_id = ? AND break_end IS NULL";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, attendanceId);
@@ -307,7 +303,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             // 既に休憩中なら開始しない
             if (hasOpenBreak(attendanceId)) return false;
 
@@ -334,7 +330,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "UPDATE attendance_breaks SET break_end = ? "
                        + "WHERE attendance_id = ? AND break_end IS NULL "
                        + "ORDER BY id DESC LIMIT 1";
@@ -360,7 +356,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "SELECT break_start FROM attendance_breaks "
                        + "WHERE attendance_id = ? AND break_end IS NULL "
                        + "ORDER BY id DESC LIMIT 1";
@@ -390,7 +386,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "SELECT id, attendance_id, break_start, break_end "
                        + "FROM attendance_breaks WHERE attendance_id = ? ORDER BY id ASC";
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -422,7 +418,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, "
                        + "  TIMESTAMP(CURDATE(), break_start), "
                        + "  TIMESTAMP(CURDATE(), break_end)"
@@ -464,7 +460,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "UPDATE attendance SET start_time = NULL, end_time = NULL, "
                        + "is_cancelled = 1, cancelled_by_admin = ?, cancelled_by_user_id = ?, cancelled_at = NOW() "
                        + "WHERE id = ?";
@@ -491,7 +487,7 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "UPDATE attendance SET is_cancelled = 0, cancelled_by_admin = 0, "
                        + "cancelled_by_user_id = NULL, cancelled_at = NULL WHERE id = ?";
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -539,7 +535,7 @@ public class AttendanceDAO {
         }
         
         // データベースに接続して勤怠履歴を取得
-        try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try(Connection conn = DBUtil.getConnection()) {
             // 最近の勤怠履歴を取得するSQL文（日付降順）
             // - group_id はNULLの場合があるため LEFT JOIN
             // - 表示用に group_name を取得（NULLなら「グループなし」）
@@ -549,7 +545,7 @@ public class AttendanceDAO {
                         + "a.is_cancelled, a.cancelled_by_admin, "
                         + "a.is_corrected, a.corrected_by_admin "
                         + "FROM attendance a "
-                        + "LEFT JOIN groups g ON a.group_id = g.id "
+                        + "LEFT JOIN `groups` g ON a.group_id = g.id AND g.is_deleted = 0 "
                         + "WHERE a.user_id = ? "
                         + "ORDER BY a.work_date DESC, a.id DESC LIMIT ?";
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -605,14 +601,14 @@ public class AttendanceDAO {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DBUtil.getConnection()) {
             String sql = "SELECT a.id, a.user_id, a.group_id, "
                        + "COALESCE(g.name, 'グループなし') AS group_name, "
                        + "a.work_date, a.start_time, a.end_time, a.prev_start_time, a.prev_end_time, "
                        + "a.is_cancelled, a.cancelled_by_admin, "
                        + "a.is_corrected, a.corrected_by_admin "
                        + "FROM attendance a "
-                       + "LEFT JOIN groups g ON a.group_id = g.id "
+                       + "LEFT JOIN `groups` g ON a.group_id = g.id AND g.is_deleted = 0 "
                        + "WHERE a.user_id = ? AND YEAR(a.work_date) = ? AND MONTH(a.work_date) = ? "
                        + "ORDER BY a.work_date DESC, a.id DESC";
             if (limit > 0) {
@@ -680,7 +676,7 @@ public class AttendanceDAO {
         }
         
         // データベースに接続して勤怠履歴を取得
-        try(Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASS)) {
+        try(Connection conn = DBUtil.getConnection()) {
             // 指定月の勤怠履歴を取得するSQL文（グループ別）
             final String sql;
             if (groupId == null) {

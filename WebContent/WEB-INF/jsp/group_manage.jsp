@@ -25,6 +25,7 @@
     <title>グループ管理 - <%= group.getName() %> - 勤怠管理サイト</title>
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/style.css">
     <script defer src="<%= request.getContextPath() %>/js/cookie_banner.js"></script>
+    <script defer src="<%= request.getContextPath() %>/js/notifications.js"></script>
 </head>
 <body class="with-header">
     <!-- ヘッダー -->
@@ -37,6 +38,7 @@
             <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
             <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
             <a href="<%= request.getContextPath() %>/groups">グループ</a>
+            <a href="<%= request.getContextPath() %>/dm">DM</a>
         </nav>
         
         <div class="header-user">
@@ -58,6 +60,7 @@
         <a href="<%= request.getContextPath() %>/attendance">勤怠打刻</a>
         <a href="<%= request.getContextPath() %>/attendance/list">勤怠一覧</a>
         <a href="<%= request.getContextPath() %>/groups">グループ</a>
+        <a href="<%= request.getContextPath() %>/dm">DM</a>
         <a href="#" style="border-bottom: none; color: #bdc3c7;"><%= loginUser.getName() %>さん</a>
         <a href="<%= request.getContextPath() %>/logout">ログアウト</a>
     </div>
@@ -134,7 +137,14 @@
                         <tbody>
                             <% for (GroupMember member : members) { %>
                                 <tr>
-                                    <td><%= member.getUserName() %></td>
+                                    <td>
+                                        <button type="button"
+                                                class="member-profile-link"
+                                                data-userid="<%= member.getUserId() %>"
+                                                data-loginid="<%= member.getUserLoginId() %>">
+                                            <%= member.getUserName() %>
+                                        </button>
+                                    </td>
                                     <td><%= member.getUserLoginId() %></td>
                                     <td><%= member.getJoinedAt().toString().substring(0, 16).replace("T", " ") %></td>
                                     <td>
@@ -171,8 +181,34 @@
         </section>
         
         <!-- 戻るリンク -->
-        <div class="back-link">
+        <div class="back-link back-actions">
             <a href="<%= request.getContextPath() %>/dashboard" class="btn btn-secondary">ダッシュボードに戻る</a>
+            <form method="post" action="<%= request.getContextPath() %>/group/delete" style="display:inline;"
+                  onsubmit="return confirm('このグループを削除（非表示）しますか？\n※勤怠・チャット履歴はDBに残り、画面から見えなくなります。');">
+                <input type="hidden" name="groupId" value="<%= group.getId() %>">
+                <button type="submit" class="btn btn-danger">グループ削除</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- メンバープロフィール モーダル -->
+    <div id="profileModal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="profileModalTitle">プロフィール</h3>
+                <button type="button" class="modal-close" id="profileModalClose" aria-label="閉じる">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-preview">
+                    <img id="profileModalIcon" class="profile-icon" src="<%= request.getContextPath() %>/img/icon.png" alt="icon">
+                    <div class="profile-text">
+                        <div id="profileModalName" class="profile-name">-</div>
+                        <div id="profileModalLoginId" class="profile-loginid">-</div>
+                    </div>
+                </div>
+                <div id="profileModalBio" class="help-text" style="margin-top:12px; white-space:pre-wrap;"></div>
+                <div id="profileModalError" class="error-message" style="display:none;"></div>
+            </div>
         </div>
     </div>
 
@@ -268,6 +304,75 @@
                     hide();
                     input.blur();
                 }
+            });
+        })();
+    </script>
+
+    <script>
+        (function() {
+            const modal = document.getElementById("profileModal");
+            const closeBtn = document.getElementById("profileModalClose");
+            const iconEl = document.getElementById("profileModalIcon");
+            const nameEl = document.getElementById("profileModalName");
+            const loginIdEl = document.getElementById("profileModalLoginId");
+            const bioEl = document.getElementById("profileModalBio");
+            const errEl = document.getElementById("profileModalError");
+            const apiBase = "<%= request.getContextPath() %>/api/user/profile";
+
+            function openModal() {
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden";
+            }
+
+            function closeModal() {
+                modal.style.display = "none";
+                document.body.style.overflow = "";
+            }
+
+            async function loadProfile(userId) {
+                errEl.style.display = "none";
+                errEl.textContent = "";
+                nameEl.textContent = "読み込み中...";
+                loginIdEl.textContent = "";
+                bioEl.textContent = "";
+                iconEl.src = "<%= request.getContextPath() %>/img/icon.png";
+
+                const url = apiBase + "?id=" + encodeURIComponent(userId);
+                const res = await fetch(url, { headers: { "Accept": "application/json" } });
+                if (!res.ok) {
+                    throw new Error("プロフィールの取得に失敗しました。");
+                }
+                const data = await res.json();
+                nameEl.textContent = data.name || "-";
+                loginIdEl.textContent = data.loginId ? ("@" + data.loginId) : "-";
+                bioEl.textContent = data.bio || "";
+                if (data.iconUrl) {
+                    iconEl.src = data.iconUrl;
+                }
+            }
+
+            document.addEventListener("click", async function(e) {
+                const btn = e.target.closest(".member-profile-link");
+                if (!btn) return;
+                const userId = btn.getAttribute("data-userid");
+                openModal();
+                try {
+                    await loadProfile(userId);
+                } catch (err) {
+                    nameEl.textContent = "-";
+                    loginIdEl.textContent = "-";
+                    bioEl.textContent = "";
+                    errEl.style.display = "block";
+                    errEl.textContent = err && err.message ? err.message : "プロフィールの取得に失敗しました。";
+                }
+            });
+
+            closeBtn.addEventListener("click", closeModal);
+            modal.addEventListener("click", function(e) {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener("keydown", function(e) {
+                if (e.key === "Escape" && modal.style.display !== "none") closeModal();
             });
         })();
     </script>

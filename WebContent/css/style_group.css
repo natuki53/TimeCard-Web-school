@@ -131,6 +131,28 @@
     margin-top: 2rem;
 }
 
+.back-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.member-profile-link {
+    border: none;
+    background: none;
+    color: #3498db;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    text-align: left;
+}
+
+.member-profile-link:hover {
+    opacity: 0.85;
+}
+
 /* グループ勤怠確認スタイル */
 .admin-actions {
     text-align: right;

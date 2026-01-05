@@ -54,6 +54,10 @@
         <div class="button-group">
             <a href="<%= request.getContextPath() %>/register" class="btn btn-secondary">新規登録はこちら</a>
         </div>
+
+        <div class="button-group">
+            <a href="<%= request.getContextPath() %>/forgot-password" class="btn btn-secondary">パスワードを忘れた方</a>
+        </div>
     </div>
 
     <%@ include file="/WEB-INF/jsp/parts/cookie_banner.jspf" %>

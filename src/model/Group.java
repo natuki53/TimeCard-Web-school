@@ -10,6 +10,8 @@ public class Group {
     private String name;
     private String description;
     private int adminUserId;
+    private boolean deleted;
+    private LocalDateTime deletedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -66,6 +68,22 @@ public class Group {
     public void setAdminUserId(int adminUserId) {
         this.adminUserId = adminUserId;
     }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
     
     public LocalDateTime getCreatedAt() {
         return createdAt;
@@ -90,6 +108,8 @@ public class Group {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", adminUserId=" + adminUserId +
+                ", deleted=" + deleted +
+                ", deletedAt=" + deletedAt +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
