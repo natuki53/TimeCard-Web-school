@@ -1,0 +1,121 @@
+@charset "UTF-8";
+
+/* =========================
+  プロフィール：アイコン編集（Discord風モーダル）
+========================= */
+
+.avatar-editor {
+  max-width: 560px;
+}
+
+.avatar-editor__body {
+  display: grid;
+  gap: 14px;
+}
+
+.avatar-crop-stage {
+  /* 常に正方形（円マスクと実際の切り出しを一致させる） */
+  width: min(360px, 90vw, 55vh);
+  height: min(360px, 90vw, 55vh);
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  touch-action: none;
+}
+
+.avatar-crop-stage img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+}
+
+/* 円形プレビュー：円の外側を暗くする（Discord風） */
+.avatar-crop-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* Discordっぽく、円を少し小さめにして外側をしっかり暗く見せる */
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+
+.avatar-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.avatar-controls input[type="range"] {
+  width: min(360px, 100%);
+}
+
+.avatar-pick-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f8f9fa;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-pick-btn:hover {
+  background: #eef2f7;
+}
+
+.avatar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid #eee;
+}
+
+.avatar-footer__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* モーダルが縦に収まらない環境でも上下が見切れないようにする */
+.avatar-modal-overlay {
+  overflow: auto;
+}
+
+.avatar-modal-overlay .modal.avatar-editor {
+  margin: 24px auto;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-modal-overlay .modal-body {
+  overflow: auto;
+}
+
+@media (max-width: 520px) {
+  .avatar-controls input[type="range"] {
+    width: min(300px, 100%);
+  }
+}
+
+

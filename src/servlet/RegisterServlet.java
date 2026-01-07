@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import dao.UserDAO;
 import model.User;
+import util.PasswordUtil;
 
 /**
  * 新規登録処理サーブレット
@@ -29,29 +30,55 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+
         // リクエストパラメータを取得
-        String name = request.getParameter("name");
-        String loginId = request.getParameter("loginId");
+        String name = trimOrEmpty(request.getParameter("name"));
+        String loginId = trimOrEmpty(request.getParameter("loginId"));
+        String secretQuestion = trimOrEmpty(request.getParameter("secretQuestion"));
+        String secretAnswer = request.getParameter("secretAnswer");
         String password = request.getParameter("password");
+        if (password == null) password = "";
+        if (secretAnswer == null) secretAnswer = "";
+        secretAnswer = secretAnswer.trim();
+
+        // 簡易バリデーション
+        if (name.isEmpty() || name.length() > 100
+                || loginId.isEmpty() || loginId.length() > 50
+                || secretQuestion.isEmpty() || secretQuestion.length() > 255
+                || secretAnswer.isEmpty() || secretAnswer.length() > 255
+                || password.isEmpty() || password.length() > 100) {
+            request.setAttribute("msg", "入力内容に不備があります。");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/register.jsp");
+            dispatcher.forward(request, response);
+            return;
+        }
         
         // Userオブジェクトを作成
         User user = new User();
         user.setLoginId(loginId);
-        user.setPasswordHash(password); // 仕様書では平文でも可とされている
+        user.setPasswordHash(PasswordUtil.hash(password));
+        user.setSecretQuestion(secretQuestion);
+        user.setSecretAnswerHash(PasswordUtil.hash(secretAnswer));
         user.setName(name);
         
-        // UserDAO.insert()で登録
+        // UserDAO で登録（IDも取得）
         UserDAO userDAO = new UserDAO();
-        boolean success = userDAO.insert(user);
+        int userId = userDAO.insertAndReturnId(user);
         
-        if (success) {
-            // 登録成功：login.jspにリダイレクト
+        if (userId > 0) {
+            request.getSession().setAttribute("registerSuccess", "新規登録が完了しました。ログインしてください。");
             response.sendRedirect(request.getContextPath() + "/login");
         } else {
             // 登録失敗：エラーメッセージを設定してregister.jspに戻す
-            request.setAttribute("errorMessage", "登録に失敗しました。ログインIDが既に使用されている可能性があります。");
+            request.setAttribute("msg", "登録に失敗しました。ログインIDが既に使用されている可能性があります。");
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/register.jsp");
             dispatcher.forward(request, response);
         }
+    }
+
+    private String trimOrEmpty(String s) {
+        if (s == null) return "";
+        return s.trim();
     }
 }

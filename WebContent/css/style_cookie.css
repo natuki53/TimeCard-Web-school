@@ -1,0 +1,92 @@
+@charset "UTF-8";
+
+/* =========================
+  Cookie consent banner
+========================= */
+
+.cookie-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    /* 画面下に表示 */
+    bottom: 0;
+    top: auto;
+    z-index: 2000;
+    padding: 12px 14px;
+    background: rgba(44, 62, 80, 0.95);
+    color: #fff;
+    box-shadow: 0 -6px 18px rgba(0,0,0,0.18);
+    /* アニメーション（下→上にスライドして表示） */
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.cookie-banner.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cookie-banner.is-hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cookie-banner {
+        transition: none;
+        transform: none;
+    }
+}
+
+.cookie-banner-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.cookie-title {
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.cookie-desc {
+    font-size: 13px;
+    opacity: 0.95;
+}
+
+.cookie-link {
+    color: #a7d7ff;
+    text-decoration: underline;
+    margin-left: 6px;
+}
+
+.cookie-actions {
+    display: flex;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.btn.btn-sm {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .cookie-banner-inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .cookie-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+

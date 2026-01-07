@@ -1,0 +1,17 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- Cookie利用通知・同意バナー（初回のみ表示） --%>
+<div id="cookieBanner" class="cookie-banner is-hidden" aria-hidden="true">
+  <div class="cookie-banner-inner">
+    <div class="cookie-text">
+      <div class="cookie-title">Cookieの使用について</div>
+      <div class="cookie-desc">
+        当サイトでは、ログイン状態の保持などのためにCookieを使用します。
+        <a href="<%= request.getContextPath() %>/privacy" class="cookie-link">詳しくはこちら</a>
+      </div>
+    </div>
+    <div class="cookie-actions">
+      <button type="button" class="btn btn-secondary btn-sm" id="cookieLater">あとで</button>
+      <button type="button" class="btn btn-primary btn-sm" id="cookieAccept">同意する</button>
+    </div>
+  </div>
+</div>

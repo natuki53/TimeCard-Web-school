@@ -12,13 +12,10 @@
 
 ## 技術スタック
 
-- Java 11
-- Jakarta Servlet 6.0.0
-- Jakarta JSP 3.1.0
-- JSTL 3.0.0
-- MySQL 8.0 (mysql-connector-j 8.0.33)
-- Maven 3.6+
-- JUnit 5.9.2 (テスト用)
+- Java 21
+- Jakarta Servlet / JSP
+- MySQL 8.0
+- Maven
 
 ## プロジェクト構成
 
@@ -86,6 +83,19 @@ mvn clean package
 
 または、IDE（Eclipse、IntelliJ IDEAなど）から直接実行することもできます。
 
+## アップロード（アイコン/添付）の永続化（本番/Docker向け）
+
+このアプリはデフォルトで `catalina.base/timecard_uploads` にアップロードを保存しますが、
+Docker運用では **コンテナ再起動で消える**可能性があります。
+
+永続化したい場合は、環境変数またはシステムプロパティで保存先を固定し、
+そのディレクトリを **volume** としてホストにマウントしてください。
+
+- **環境変数**: `TIMECARD_UPLOAD_DIR=/data/timecard_uploads`
+- **システムプロパティ**: `-Dtimecard.upload.dir=/data/timecard_uploads`
+
+サンプル: `docker-compose.prod.example.yml` を参照してください。
+
 ## URL一覧
 
 | URL | 説明 |
@@ -107,7 +117,7 @@ mvn clean package
 
 ## 開発環境
 
-- Java 11以上
+- Java 21
 - Maven 3.6以上
 - MySQL 8.0以上
 - Apache Tomcat 10.0以上（またはJakarta EE対応のサーブレットコンテナ）

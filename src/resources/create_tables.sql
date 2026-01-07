@@ -1,4 +1,4 @@
--- 勤怠管理サイト データベーススキーマ（テストデータ付き）
+-- 勤怠管理サイト データベーススキーマ
 -- データベース作成（必要に応じて）
 -- CREATE DATABASE IF NOT EXISTS timecard_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- USE timecard_db;
@@ -8,32 +8,26 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     login_id VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    secret_question VARCHAR(255) NOT NULL,
+    secret_answer_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
+    bio TEXT NULL,
+    dm_allowed TINYINT(1) NOT NULL DEFAULT 1,
+    icon_filename VARCHAR(255) NULL,
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    deleted_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_login_id (login_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- attendance テーブル（勤怠情報）
-CREATE TABLE IF NOT EXISTS attendance (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    work_date DATE NOT NULL,
-    start_time TIME NULL,
-    end_time TIME NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY uk_user_date (user_id, work_date),
-    INDEX idx_user_id (user_id),
-    INDEX idx_work_date (work_date)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- groups テーブル（グループ情報）
-CREATE TABLE IF NOT EXISTS groups (
+CREATE TABLE IF NOT EXISTS `groups` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     admin_user_id INT NOT NULL,
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    deleted_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -46,199 +40,366 @@ CREATE TABLE IF NOT EXISTS group_members (
     group_id INT NOT NULL,
     user_id INT NOT NULL,
     joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY uk_group_user (group_id, user_id),
     INDEX idx_group_id (group_id),
     INDEX idx_user_id (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
--- テスト用ユーザーデータ
--- ============================================
--- パスワードは平文で保存（本来はハッシュ化推奨）
-INSERT INTO users (login_id, password_hash, name) VALUES
-('yamada', 'yamada123', '山田太郎'),
-('suzuki', 'suzuki123', '鈴木花子'),
-('tanaka', 'tanaka123', '田中一郎'),
-('watanabe', 'watanabe123', '渡辺美咲'),
-('sato', 'sato123', '佐藤健太'),
-('admin', 'admin123', '管理者'),
-('member1', 'member123', 'メンバー1'),
-('member2', 'member123', 'メンバー2')
-ON DUPLICATE KEY UPDATE name=VALUES(name);
+-- group_last_read テーブル（グループチャット既読管理）
+CREATE TABLE IF NOT EXISTS group_last_read (
+    user_id INT NOT NULL,
+    group_id INT NOT NULL,
+    last_read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, group_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
+    INDEX idx_group_last_read_group (group_id, last_read_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
--- テスト用勤怠データ
--- ============================================
--- 現在の日付を基準に、過去30日分のデータを作成
--- 各ユーザーに対して様々なパターンの勤怠データを追加
+-- dm_threads テーブル（DMスレッド：2人1組）
+-- user1_id < user2_id を満たす形で格納する想定（ペアの一意制約）
+CREATE TABLE IF NOT EXISTS dm_threads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user1_id INT NOT NULL,
+    user2_id INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_dm_pair (user1_id, user2_id),
+    INDEX idx_dm_user1 (user1_id),
+    INDEX idx_dm_user2 (user2_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 山田太郎 (user_id = 1) の勤怠データ
--- 今月のデータ（完全な出退勤）
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(1, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '09:00:00', '18:00:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:15:00', '18:30:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:05:00', '17:45:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '08:55:00', '18:15:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:10:00', '18:00:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:00:00', '17:50:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:20:00', '18:10:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:00:00', '18:00:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 8 DAY), '08:50:00', '18:20:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 9 DAY), '09:05:00', '18:05:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), '09:00:00', '18:00:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 11 DAY), '09:15:00', '17:45:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 12 DAY), '09:00:00', '18:00:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 13 DAY), '09:10:00', '18:15:00'),
-(1, DATE_SUB(CURDATE(), INTERVAL 14 DAY), '09:00:00', '18:00:00')
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- dm_messages テーブル（DMメッセージ）
+CREATE TABLE IF NOT EXISTS dm_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    thread_id INT NOT NULL,
+    sender_user_id INT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (thread_id) REFERENCES dm_threads(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_dm_thread_created (thread_id, created_at),
+    INDEX idx_dm_sender (sender_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 鈴木花子 (user_id = 2) の勤怠データ
--- 一部出勤のみ（退勤未打刻）、一部欠勤
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(2, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '09:30:00', NULL),
-(2, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:25:00', '18:00:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', '17:30:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), NULL, NULL),
-(2, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:15:00', '18:15:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:00:00', NULL),
-(2, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:10:00', '18:00:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 7 DAY), NULL, NULL),
-(2, DATE_SUB(CURDATE(), INTERVAL 8 DAY), '09:20:00', '18:10:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 9 DAY), '09:05:00', '17:45:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 10 DAY), '09:00:00', '18:00:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 11 DAY), NULL, NULL),
-(2, DATE_SUB(CURDATE(), INTERVAL 12 DAY), '09:15:00', '18:20:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 13 DAY), '09:00:00', '18:00:00'),
-(2, DATE_SUB(CURDATE(), INTERVAL 14 DAY), '09:10:00', NULL)
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- dm_message_attachments テーブル（DM添付ファイル）
+CREATE TABLE IF NOT EXISTS dm_message_attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id INT NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(120) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (message_id) REFERENCES dm_messages(id) ON DELETE CASCADE,
+    INDEX idx_dm_message_id (message_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 田中一郎 (user_id = 3) の勤怠データ
--- 規則的な勤怠パターン
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(3, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '08:45:00', '17:45:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '08:50:00', '17:50:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '08:45:00', '17:45:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '08:55:00', '17:55:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '08:45:00', '17:45:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '08:50:00', '17:50:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '08:45:00', '17:45:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '08:50:00', '17:50:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 8 DAY), '08:45:00', '17:45:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 9 DAY), '08:55:00', '17:55:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 10 DAY), '08:45:00', '17:45:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 11 DAY), '08:50:00', '17:50:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 12 DAY), '08:45:00', '17:45:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 13 DAY), '08:50:00', '17:50:00'),
-(3, DATE_SUB(CURDATE(), INTERVAL 14 DAY), '08:45:00', '17:45:00')
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- dm_last_read テーブル（DM既読管理）
+CREATE TABLE IF NOT EXISTS dm_last_read (
+    user_id INT NOT NULL,
+    thread_id INT NOT NULL,
+    last_read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, thread_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (thread_id) REFERENCES dm_threads(id) ON DELETE CASCADE,
+    INDEX idx_dm_last_read_thread (thread_id, last_read_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 渡辺美咲 (user_id = 4) の勤怠データ
--- 遅刻・早退パターン
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(4, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '10:00:00', '18:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:00:00', '16:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:30:00', '18:30:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:00:00', '17:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '10:15:00', '18:15:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:00:00', '16:30:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:45:00', '18:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:00:00', '17:15:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 8 DAY), '10:00:00', '18:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 9 DAY), '09:00:00', '16:45:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 10 DAY), '09:30:00', '18:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 11 DAY), '09:00:00', '17:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 12 DAY), '10:00:00', '18:30:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 13 DAY), '09:00:00', '16:00:00'),
-(4, DATE_SUB(CURDATE(), INTERVAL 14 DAY), '09:45:00', '18:00:00')
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- attendance テーブル（勤怠情報）
+-- グループ別に勤怠を保存する（未所属/グループなしは group_id=NULL として扱う）
+-- 一般ユーザーが行った修正は corrected_by_admin=0 として区別する
+CREATE TABLE IF NOT EXISTS attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    group_id INT NULL,
+    work_date DATE NOT NULL,
+    start_time TIME NULL,
+    end_time TIME NULL,
+    prev_start_time TIME NULL,
+    prev_end_time TIME NULL,
+    is_cancelled TINYINT(1) NOT NULL DEFAULT 0,
+    cancelled_by_admin TINYINT(1) NOT NULL DEFAULT 0,
+    cancelled_by_user_id INT NULL,
+    cancelled_at DATETIME NULL,
+    is_corrected TINYINT(1) NOT NULL DEFAULT 0,
+    corrected_by_admin TINYINT(1) NOT NULL DEFAULT 0,
+    corrected_by_user_id INT NULL,
+    corrected_at DATETIME NULL,
+    -- group_id が NULL の場合も一意制約を効かせるためのキー
+    group_id_key INT GENERATED ALWAYS AS (IFNULL(group_id, 0)) STORED,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    -- MySQL では ON DELETE SET NULL が通らない環境があるため、グループ削除は参照がある限り禁止(RESTRICT)
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE RESTRICT,
+    FOREIGN KEY (cancelled_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (corrected_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE KEY uk_user_date_group (user_id, work_date, group_id_key),
+    INDEX idx_user_id (user_id),
+    INDEX idx_group_id (group_id),
+    INDEX idx_cancelled_by_user_id (cancelled_by_user_id),
+    INDEX idx_corrected_by_user_id (corrected_by_user_id),
+    INDEX idx_work_date (work_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 佐藤健太 (user_id = 5) の勤怠データ
--- 様々なパターン（完全、部分、欠勤）
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(5, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 1 DAY), NULL, NULL),
-(5, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:00:00', NULL),
-(5, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 5 DAY), NULL, NULL),
-(5, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 8 DAY), NULL, NULL),
-(5, DATE_SUB(CURDATE(), INTERVAL 9 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 10 DAY), '09:00:00', NULL),
-(5, DATE_SUB(CURDATE(), INTERVAL 11 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 12 DAY), NULL, NULL),
-(5, DATE_SUB(CURDATE(), INTERVAL 13 DAY), '09:00:00', '18:00:00'),
-(5, DATE_SUB(CURDATE(), INTERVAL 14 DAY), '09:00:00', '18:00:00')
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- attendance_breaks テーブル（休憩情報）
+-- 1日の勤怠に対して複数回の休憩を記録できる
+CREATE TABLE IF NOT EXISTS attendance_breaks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    attendance_id INT NOT NULL,
+    break_start TIME NOT NULL,
+    break_end TIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (attendance_id) REFERENCES attendance(id) ON DELETE CASCADE,
+    INDEX idx_attendance_id (attendance_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 管理者 (user_id = 6) の勤怠データ
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(6, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '09:00:00', '18:00:00'),
-(6, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:00:00', '18:00:00'),
-(6, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', '18:00:00'),
-(6, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:00:00', '18:00:00'),
-(6, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:00:00', '18:00:00')
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- group_messages テーブル（グループチャット投稿）
+CREATE TABLE IF NOT EXISTS group_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    group_id INT NOT NULL,
+    user_id INT NOT NULL,
+    content TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_group_id_created_at (group_id, created_at),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- メンバー1 (user_id = 7) の勤怠データ
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(7, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '09:00:00', '18:00:00'),
-(7, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:00:00', '18:00:00'),
-(7, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', '18:00:00')
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- group_message_attachments テーブル（チャット添付ファイル）
+-- 画像/PDF/動画/音楽などを保存（実体ファイルはサーバ側に保存し、ここはメタ情報）
+CREATE TABLE IF NOT EXISTS group_message_attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id INT NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(120) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (message_id) REFERENCES group_messages(id) ON DELETE CASCADE,
+    INDEX idx_message_id (message_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- メンバー2 (user_id = 8) の勤怠データ
-INSERT INTO attendance (user_id, work_date, start_time, end_time) VALUES
-(8, DATE_SUB(CURDATE(), INTERVAL 0 DAY), '09:00:00', '18:00:00'),
-(8, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:00:00', '18:00:00'),
-(8, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', '18:00:00')
-ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+-- remember_tokens テーブル（ログイン状態保持）
+CREATE TABLE IF NOT EXISTS remember_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_token_hash (token_hash),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
--- テスト用グループデータ
--- ============================================
--- グループ1: 開発チーム（管理者: 山田太郎）
-INSERT INTO groups (name, description, admin_user_id) VALUES
-('開発チーム', 'ソフトウェア開発を担当するチーム', 1)
-ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description);
+-- テスト用ユーザー
+-- パスワード/秘密の質問の答えは bcrypt ハッシュを格納しています。
+INSERT INTO users (login_id, password_hash, secret_question, secret_answer_hash, name) VALUES
+('test_user',  '$2a$12$znB77e9W2YF8wbSMomfbU.fghMsyQf7Si44bWkkXAsNYZ14NOXeFa', '初めて飼ったペットの名前は？', '$2a$12$J33QjeO1TS/q18LHOuvAf.rIv15SQRFK7N90L0IGnsOPtiGRqpsXu', 'テストユーザー'),
+('admin_user', '$2a$12$oRMKfEIaqK1zstji/gO8iehRW.MODBsu.7/qYP8BHKBErCyIOJQLO', '生まれた町（市区町村）は？',     '$2a$12$asurRfzh2c/noTnZ7NIp4uHhvE791DFpcnoRHwqIiSOW.epz/bbsS', '管理者ユーザー'),
+('member1',    '$2a$12$0Ijc/xTiyIKpuh0lXFVm9.rS1o30yn9f/pThqX8lHEkjtbGERqmX.', '好きな食べ物は？',             '$2a$12$9rNbx/sOZUkpI9xiGa2dIOBS7N11yyfQij21yvP3QokfPiWINYhci', 'メンバー1'),
+('member2',    '$2a$12$WOykBuAJBTpaUztjFmSaq.PJRibkvCSEc0/ezWscAnODBADAdL28S', '母親の旧姓は？',               '$2a$12$DvN4aCFXFbUAMvM1dIUYMOWKq/PratqBrqC.N6VK5aVjlB7BoKz16', 'メンバー2'),
+('member3',    '$2a$12$/hC5LDY0tjFiQcwogPrmzegXf4yAKwVPZn7qAAoUzexpwb.UF9Qte', '初めて行った海外の国は？',     '$2a$12$t0cGT1Em8.ucQTPP7wIAO..UKxe36yJE64zkgbFARScyYsIqAxLgq', 'メンバー3'),
+('member4',    '$2a$12$ke/WzPTExVKo2Eq3MAhtSOFwHnBa2s9NLqX5G/hm.FS94CH.gGVdW', '小学校の名前は？',             '$2a$12$74NWiG1kAsxcuQPlP9g/H.B5n3b.D6npE0hHxoWARiwWe26V3htIm', 'メンバー4'),
+('manager1',   '$2a$12$BDDqBjTg9NBQYlA/AJVCeukFaKfOErRFLJKjJZWtceyoA.gtpIpw.', '好きな色は？',                 '$2a$12$YRiykRP5YFe.NlOpKz/KBO6JPxz6m81zdfKKgF0.r/QPIK.c1UQxC', 'マネージャー1')
+ON DUPLICATE KEY UPDATE
+    password_hash = VALUES(password_hash),
+    secret_question = VALUES(secret_question),
+    secret_answer_hash = VALUES(secret_answer_hash),
+    name = VALUES(name);
 
--- グループ2: 営業チーム（管理者: 鈴木花子）
-INSERT INTO groups (name, description, admin_user_id) VALUES
-('営業チーム', '営業活動を担当するチーム', 2)
-ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description);
+-- テスト用グループ
+INSERT INTO `groups` (name, description, admin_user_id) VALUES
+('テストグループ1', 'テスト用のグループ1です', 2),
+('テストグループ2', 'テスト用のグループ2です', 2),
+('開発チーム', '開発部門のグループです', 7),
+('営業チーム', '営業部門のグループです', 2)
+ON DUPLICATE KEY UPDATE name=name;
 
--- グループ3: 管理チーム（管理者: 管理者）
-INSERT INTO groups (name, description, admin_user_id) VALUES
-('管理チーム', 'システム管理を担当するチーム', 6)
-ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description);
-
--- ============================================
--- テスト用グループメンバーデータ
--- ============================================
--- グループ1（開発チーム）のメンバー
--- 管理者（山田太郎）は自動的にメンバーに含まれる想定ですが、明示的に追加
+-- テスト用グループメンバー
 INSERT INTO group_members (group_id, user_id) VALUES
-(1, 1),  -- 山田太郎（管理者）
-(1, 3),  -- 田中一郎
-(1, 5),  -- 佐藤健太
-(1, 7)   -- メンバー1
-ON DUPLICATE KEY UPDATE user_id=VALUES(user_id);
+(1, 2), -- admin_user がグループ1の管理者兼メンバー
+(1, 3), -- member1 がグループ1のメンバー
+(1, 4), -- member2 がグループ1のメンバー
+(1, 5), -- member3 がグループ1のメンバー
+(2, 2), -- admin_user がグループ2の管理者兼メンバー
+(2, 3), -- member1 がグループ2のメンバー
+(2, 6), -- member4 がグループ2のメンバー
+(3, 7), -- manager1 が開発チームの管理者兼メンバー
+(3, 3), -- member1 が開発チームのメンバー
+(3, 4), -- member2 が開発チームのメンバー
+(3, 5), -- member3 が開発チームのメンバー
+(4, 2), -- admin_user が営業チームの管理者兼メンバー
+(4, 6)  -- member4 が営業チームのメンバー
+ON DUPLICATE KEY UPDATE group_id=group_id;
 
--- グループ2（営業チーム）のメンバー
-INSERT INTO group_members (group_id, user_id) VALUES
-(2, 2),  -- 鈴木花子（管理者）
-(2, 4),  -- 渡辺美咲
-(2, 8)   -- メンバー2
-ON DUPLICATE KEY UPDATE user_id=VALUES(user_id);
+-- テスト用勤怠データ（今日のデータ）
+INSERT INTO attendance (user_id, group_id, work_date, start_time, end_time) VALUES
+(1, NULL, CURDATE(), '09:00:00', '18:00:00'), -- test_user の今日の勤怠（グループなし）
+(2, 1, CURDATE(), '09:00:00', '18:00:00'),    -- admin_user の今日の勤怠（グループ1）
+(3, 1, CURDATE(), '09:30:00', '18:30:00'),    -- member1 の今日の勤怠（グループ1）
+(4, 1, CURDATE(), '10:00:00', '19:00:00'),    -- member2 の今日の勤怠（グループ1）
+(2, 2, CURDATE(), '09:00:00', NULL),          -- admin_user の今日の勤怠（グループ2、退勤未登録）
+(3, 2, CURDATE(), NULL, NULL)                 -- member1 の今日の勤怠（グループ2、出退勤未登録）
+ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
 
--- グループ3（管理チーム）のメンバー
-INSERT INTO group_members (group_id, user_id) VALUES
-(3, 6),  -- 管理者（管理者）
-(3, 1),  -- 山田太郎
-(3, 2),  -- 鈴木花子
-(3, 7),  -- メンバー1
-(3, 8)   -- メンバー2
-ON DUPLICATE KEY UPDATE user_id=VALUES(user_id);
+-- テスト用勤怠データ（過去1週間分）
+INSERT INTO attendance (user_id, group_id, work_date, start_time, end_time) VALUES
+-- 1日前
+(1, NULL, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:00:00', '18:00:00'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:00:00', '18:00:00'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:15:00', '18:15:00'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:30:00', '18:30:00'),
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '10:00:00', '19:00:00'),
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:00:00', '17:30:00'),
+(3, 2, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:20:00', '18:20:00'),
+(7, 3, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '08:30:00', '17:30:00'),
+-- 2日前
+(1, NULL, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', '18:00:00'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', '18:00:00'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:30:00', '18:30:00'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '10:00:00', '19:00:00'),
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:45:00', '18:45:00'),
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:00:00', NULL), -- 退勤未登録
+(7, 3, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '08:30:00', '17:30:00'),
+-- 3日前
+(1, NULL, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:00:00', '18:00:00'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:00:00', '18:00:00'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:30:00', '18:30:00'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '10:00:00', '19:00:00'),
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:15:00', '18:15:00'),
+(3, 2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:20:00', '18:20:00'),
+(6, 2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:10:00', '18:10:00'),
+(7, 3, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '08:30:00', '17:30:00'),
+(3, 3, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:00:00', '18:00:00'),
+-- 4日前
+(1, NULL, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:00:00', '18:00:00'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:00:00', '18:00:00'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:30:00', '18:30:00'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '10:00:00', '19:00:00'),
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:45:00', '18:45:00'),
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:00:00', '17:30:00'),
+(7, 3, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '08:30:00', '17:30:00'),
+-- 5日前
+(1, NULL, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:00:00', '18:00:00'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:00:00', '18:00:00'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:30:00', '18:30:00'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '10:00:00', '19:00:00'),
+(3, 2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:20:00', '18:20:00'),
+(6, 2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:10:00', '18:10:00'),
+(7, 3, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '08:30:00', '17:30:00'),
+(3, 3, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:00:00', '18:00:00'),
+(4, 3, DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:15:00', '18:15:00'),
+-- 6日前
+(1, NULL, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:00:00', '18:00:00'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:00:00', '18:00:00'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:30:00', '18:30:00'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '10:00:00', '19:00:00'),
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:45:00', '18:45:00'),
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:00:00', '17:30:00'),
+(7, 3, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '08:30:00', '17:30:00'),
+(3, 3, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '09:00:00', '18:00:00'),
+-- 7日前
+(1, NULL, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:00:00', '18:00:00'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:00:00', '18:00:00'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:30:00', '18:30:00'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '10:00:00', '19:00:00'),
+(3, 2, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:20:00', '18:20:00'),
+(7, 3, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '08:30:00', '17:30:00'),
+(3, 3, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:00:00', '18:00:00'),
+(4, 3, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:15:00', '18:15:00'),
+(5, 3, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '09:30:00', '18:30:00')
+ON DUPLICATE KEY UPDATE start_time=VALUES(start_time), end_time=VALUES(end_time);
+
+-- テスト用勤怠データ（修正済みのデータ）
+INSERT INTO attendance (user_id, group_id, work_date, start_time, end_time, prev_start_time, prev_end_time, is_corrected, corrected_by_admin, corrected_by_user_id, corrected_at) VALUES
+-- 一般ユーザーが修正したデータ（管理者修正ではない）
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '09:45:00', '18:45:00', '09:30:00', '18:30:00', 1, 0, 3, NOW()),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '10:15:00', '19:15:00', '10:00:00', '19:00:00', 1, 0, 4, NOW()),
+-- 管理者が修正したデータ
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '09:20:00', '18:20:00', '09:45:00', '18:45:00', 1, 1, 2, NOW()),
+(6, 2, DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:05:00', '18:05:00', '09:10:00', '18:10:00', 1, 1, 2, NOW())
+ON DUPLICATE KEY UPDATE 
+    start_time=VALUES(start_time), 
+    end_time=VALUES(end_time),
+    prev_start_time=VALUES(prev_start_time),
+    prev_end_time=VALUES(prev_end_time),
+    is_corrected=VALUES(is_corrected),
+    corrected_by_admin=VALUES(corrected_by_admin),
+    corrected_by_user_id=VALUES(corrected_by_user_id),
+    corrected_at=VALUES(corrected_at);
+
+-- テスト用勤怠データ（取り消し済みのデータ）
+INSERT INTO attendance (user_id, group_id, work_date, start_time, end_time, is_cancelled, cancelled_by_admin, cancelled_by_user_id, cancelled_at) VALUES
+-- 一般ユーザーが取り消したデータ
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), NULL, NULL, 1, 0, 5, NOW()),
+(6, 2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), NULL, NULL, 1, 0, 6, NOW()),
+-- 管理者が取り消したデータ
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), NULL, NULL, 1, 1, 2, NOW())
+ON DUPLICATE KEY UPDATE 
+    start_time=VALUES(start_time),
+    end_time=VALUES(end_time),
+    is_cancelled=VALUES(is_cancelled),
+    cancelled_by_admin=VALUES(cancelled_by_admin),
+    cancelled_by_user_id=VALUES(cancelled_by_user_id),
+    cancelled_at=VALUES(cancelled_at);
+
+-- テスト用休憩データ
+-- 注意: attendance_idは実際のattendanceレコードのIDに依存するため、後で更新が必要な場合があります
+INSERT INTO attendance_breaks (attendance_id, break_start, break_end) 
+SELECT 
+    a.id,
+    '12:00:00' AS break_start,
+    '13:00:00' AS break_end
+FROM attendance a
+WHERE a.user_id = 1 AND a.work_date = CURDATE()
+LIMIT 1
+ON DUPLICATE KEY UPDATE break_start=VALUES(break_start), break_end=VALUES(break_end);
+
+INSERT INTO attendance_breaks (attendance_id, break_start, break_end) 
+SELECT 
+    a.id,
+    '12:00:00' AS break_start,
+    '13:00:00' AS break_end
+FROM attendance a
+WHERE a.user_id = 2 AND a.group_id = 1 AND a.work_date = CURDATE()
+LIMIT 1
+ON DUPLICATE KEY UPDATE break_start=VALUES(break_start), break_end=VALUES(break_end);
+
+INSERT INTO attendance_breaks (attendance_id, break_start, break_end) 
+SELECT 
+    a.id,
+    '12:30:00' AS break_start,
+    '13:30:00' AS break_end
+FROM attendance a
+WHERE a.user_id = 3 AND a.group_id = 1 AND a.work_date = CURDATE()
+LIMIT 1
+ON DUPLICATE KEY UPDATE break_start=VALUES(break_start), break_end=VALUES(break_end);
+
+-- 複数回の休憩があるケース
+INSERT INTO attendance_breaks (attendance_id, break_start, break_end) 
+SELECT 
+    a.id,
+    '12:00:00' AS break_start,
+    '13:00:00' AS break_end
+FROM attendance a
+WHERE a.user_id = 4 AND a.group_id = 1 AND a.work_date = CURDATE()
+LIMIT 1
+ON DUPLICATE KEY UPDATE break_start=VALUES(break_start), break_end=VALUES(break_end);
+
+INSERT INTO attendance_breaks (attendance_id, break_start, break_end) 
+SELECT 
+    a.id,
+    '15:00:00' AS break_start,
+    '15:15:00' AS break_end
+FROM attendance a
+WHERE a.user_id = 4 AND a.group_id = 1 AND a.work_date = CURDATE()
+LIMIT 1
+ON DUPLICATE KEY UPDATE break_start=VALUES(break_start), break_end=VALUES(break_end);

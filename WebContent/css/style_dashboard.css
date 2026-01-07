@@ -1,0 +1,167 @@
+@charset "UTF-8";
+
+/* =========================
+  Dashboard / Groups cards
+========================= */
+
+/* ダッシュボードスタイル */
+.welcome-message {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.dashboard-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-section h2 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+}
+
+.dashboard-section h3 {
+    color: #34495e;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* 今日の勤怠状況 */
+.today-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.status-label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.status-value {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.status-value.no-record {
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* クイックアクション */
+.quick-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* グループ管理（カード一覧） */
+.group-category {
+    margin-bottom: 2rem;
+}
+
+.group-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.group-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #fafafa;
+    transition: box-shadow 0.3s;
+}
+
+.group-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.group-card.admin-group {
+    border-left: 4px solid #e74c3c;
+}
+
+.group-card.member-group {
+    border-left: 4px solid #3498db;
+}
+
+.group-info {
+    margin-bottom: 1rem;
+}
+
+.group-name {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.group-description {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.group-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.no-groups {
+    color: #7f8c8d;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+/* 最近の勤怠履歴 */
+.recent-attendance {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.no-records {
+    color: #7f8c8d;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+    .today-status {
+        grid-template-columns: 1fr;
+    }
+    .quick-actions {
+        flex-direction: column;
+    }
+    .group-list {
+        grid-template-columns: 1fr;
+    }
+    .group-actions {
+        justify-content: center;
+    }
+}
+
+

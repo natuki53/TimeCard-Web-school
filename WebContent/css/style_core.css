@@ -1,0 +1,666 @@
+@charset "UTF-8";
+
+/* =========================
+  Core styles (base/layout/components)
+  - reset, header, layout, buttons, forms, tables, utilities
+========================= */
+
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-width: 320px;
+}
+
+/* ヘッダーがあるページ用のボディ調整 */
+body.with-header {
+    padding-top: 60px;
+}
+
+/* ヘッダースタイル */
+.header {
+    background-color: #2c3e50;
+    height: 60px;
+    width: 100%;
+    max-width: 100vw;
+    display: grid;
+    grid-template-columns: 200px 1fr 250px;
+    align-items: center;
+    padding: 0 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.header-logo {
+    height: 45px;
+    width: auto;
+    max-width: 180px;
+    object-fit: contain;
+    object-position: left center;
+    transition: opacity 0.3s;
+    display: block;
+}
+
+.header a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.header a:hover .header-logo {
+    opacity: 0.8;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+
+.header-nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
+}
+
+.header-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+    font-size: 14px;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.header-user-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    flex-shrink: 1;
+}
+
+.header-logout {
+    color: #e74c3c !important;
+    font-size: 14px;
+    padding: 8px 16px;
+    border: 1px solid #e74c3c;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.header-logout:hover {
+    background-color: #e74c3c;
+    color: white !important;
+}
+
+/* ハンバーガーメニュー */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+/* モバイルメニュー */
+.mobile-menu {
+    display: none;
+    position: fixed;
+    top: 50px;
+    left: 0;
+    width: 100%;
+    background-color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+}
+
+.mobile-menu a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 15px 20px;
+    border-bottom: 1px solid #34495e;
+    font-size: 16px;
+}
+
+.mobile-menu a:hover {
+    background-color: #34495e;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .header {
+        height: 50px;
+        grid-template-columns: 1fr auto;
+        padding: 0 1rem;
+    }
+
+    .header-logo {
+        height: 35px;
+        max-width: 150px;
+    }
+
+    .header-nav {
+        display: none;
+    }
+
+    .header-user {
+        display: none;
+    }
+
+    .hamburger {
+        display: flex;
+        grid-column: 2;
+    }
+
+    .mobile-menu.active {
+        display: block;
+    }
+
+    .mobile-menu {
+        top: 50px;
+    }
+
+    body.with-header {
+        padding-top: 50px;
+    }
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 70px; /* ヘッダー分のマージンを追加 */
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin-top: 65px; /* モバイル用調整 */
+        margin-bottom: 30px;
+        padding: 15px;
+        margin-left: 10px;
+        margin-right: 10px;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h2 {
+    color: #34495e;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+/* リンク */
+a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* フォームスタイル */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="date"],
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+/* ボタンスタイル */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    line-height: 1.2;
+    vertical-align: middle;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #229954;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.button-group {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.button-group .btn {
+    margin: 0 10px;
+}
+
+/* テーブルスタイル */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #3498db;
+    color: white;
+    font-weight: bold;
+}
+
+table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* メッセージスタイル */
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #c3e6cb;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 1rem;
+}
+
+/* 月選択 */
+.month-navigation {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.month-navigation a {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 0 5px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 4px;
+}
+
+.month-navigation a:hover {
+    background-color: #2980b9;
+    text-decoration: none;
+}
+
+.month-navigation .current-month {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0 20px;
+}
+
+/* 統計情報 */
+.stats {
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.stats p {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* 勤怠打刻画面 */
+.attendance-info {
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.attendance-info p {
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+.attendance-divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 12px 0;
+}
+
+.break-total {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.break-item {
+    margin: 6px 0;
+}
+
+.time-display {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.attendance-buttons {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.attendance-buttons .btn {
+    margin: 0 10px;
+    padding: 15px 30px;
+    font-size: 18px;
+}
+
+/* 勤怠状況の色分け */
+.status-complete {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.status-incomplete {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.status-partial {
+    color: #f39c12;
+    font-weight: 600;
+}
+
+/* 勤怠一覧テーブル（上書き・整形） */
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-table th,
+.attendance-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.attendance-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.attendance-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.attendance-table .date-column {
+    width: 120px;
+}
+
+.attendance-table .time-column {
+    width: 100px;
+}
+
+.attendance-table .duration-column {
+    width: 100px;
+}
+
+/* 勤怠修正（一般ユーザーが修正した行は黄色表示） */
+.attendance-corrected-by-member {
+    background-color: #fff3cd !important;
+}
+
+.attendance-corrected-by-member:hover {
+    background-color: #ffe8a1 !important;
+}
+
+/* 勤怠取消（一般ユーザーが取り消した行は黄色＋メッセージ） */
+.attendance-cancelled-by-member {
+    background-color: #fff3cd !important;
+}
+
+.attendance-cancelled-by-member:hover {
+    background-color: #ffe8a1 !important;
+}
+
+.cancelled-message {
+    margin-top: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #856404;
+}
+
+.edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.edit-actions details {
+    display: inline-block;
+}
+
+/* 空の状態表示 */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #7f8c8d;
+}
+
+.empty-state h3 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+/* =========================
+  Modal / Profile UI
+========================= */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 2000;
+}
+
+.modal {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #2c3e50;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.modal-close:hover {
+    color: #2c3e50;
+}
+
+.modal-body {
+    padding: 16px;
+}
+
+.profile-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e0e0e0;
+    background: #f8f9fa;
+}
+
+.profile-name {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.profile-loginid {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin-top: 2px;
+}
+
+
