@@ -26,6 +26,12 @@
     
     DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy年MM月");
     String currentMonthStr = targetYearMonth.format(monthFormatter);
+    LocalDate monthFirstDay = targetYearMonth.atDay(1);
+    LocalDate monthLastDay = targetYearMonth.atEndOfMonth();
+    LocalDate today = LocalDate.now();
+    String defaultWorkDate = (today.getYear() == targetYearMonth.getYear() && today.getMonthValue() == targetYearMonth.getMonthValue())
+        ? today.toString()
+        : monthFirstDay.toString();
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -129,6 +135,28 @@
                             <% 
                                 } else {
                                     List<Attendance> attendances = memberAttendances.get(member.getUserId());
+                            %>
+                                <!-- 存在しない日の勤怠を追加（修正扱い） -->
+                                <details style="margin: 10px 0 14px 0;">
+                                    <summary class="btn btn-sm btn-secondary">未登録日を追加（修正扱い）</summary>
+                                    <form method="POST" action="<%= request.getContextPath() %>/attendance/correct" class="attendance-correct-form" style="margin-top: 8px;" onsubmit="return confirm('この内容で勤怠を登録（修正扱い）しますか？');">
+                                        <input type="hidden" name="userId" value="<%= member.getUserId() %>">
+                                        <input type="hidden" name="groupId" value="<%= group.getId() %>">
+                                        <div class="form-group inline-form">
+                                            <label>日付:</label>
+                                            <input type="date" name="workDate" value="<%= defaultWorkDate %>" min="<%= monthFirstDay.toString() %>" max="<%= monthLastDay.toString() %>">
+                                            <label>出勤:</label>
+                                            <input type="time" name="startTime" value="">
+                                            <label>退勤:</label>
+                                            <input type="time" name="endTime" value="">
+                                            <button type="submit" class="btn btn-sm btn-primary">追加</button>
+                                        </div>
+                                        <div style="margin-top: 6px; color: #666; font-size: 0.9rem;">
+                                            ※ この月（<%= currentMonthStr %>）の範囲で日付を選べます。未登録日でも登録できます。
+                                        </div>
+                                    </form>
+                                </details>
+                            <%
                                     if (attendances != null && !attendances.isEmpty()) {
                             %>
                                 <table class="attendance-table">

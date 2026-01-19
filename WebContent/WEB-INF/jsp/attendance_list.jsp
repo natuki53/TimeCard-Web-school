@@ -31,6 +31,12 @@
     LocalDate currentMonth = LocalDate.of(year, month, 1);
     LocalDate prevMonth = currentMonth.minusMonths(1);
     LocalDate nextMonth = currentMonth.plusMonths(1);
+    LocalDate monthFirstDay = currentMonth;
+    LocalDate monthLastDay = currentMonth.withDayOfMonth(currentMonth.lengthOfMonth());
+    LocalDate today = LocalDate.now();
+    String defaultWorkDate = (today.getYear() == year && today.getMonthValue() == month)
+        ? today.toString()
+        : monthFirstDay.toString();
     
     DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy年MM月");
     String currentMonthStr = currentMonth.format(monthFormatter);
@@ -122,6 +128,27 @@
                 <noscript>
                     <button type="submit" class="btn btn-primary btn-sm">切替</button>
                 </noscript>
+            </form>
+        </div>
+
+        <!-- 存在しない日の勤怠を追加（修正扱い） -->
+        <div class="card" style="margin: 16px 0;">
+            <h2 style="margin: 0 0 8px 0; font-size: 1.05rem;">存在しない日の勤怠を追加（修正扱い）</h2>
+            <form method="POST" action="<%= request.getContextPath() %>/attendance/correct" class="attendance-correct-form" onsubmit="return confirm('この内容で勤怠を登録（修正扱い）しますか？');">
+                <input type="hidden" name="userId" value="<%= loginUser.getId() %>">
+                <input type="hidden" name="groupId" value="<%= selectedGroupId != null ? selectedGroupId : 0 %>">
+                <div class="form-group inline-form">
+                    <label>日付:</label>
+                    <input type="date" name="workDate" value="<%= defaultWorkDate %>" min="<%= monthFirstDay.toString() %>" max="<%= monthLastDay.toString() %>">
+                    <label>出勤:</label>
+                    <input type="time" name="startTime" value="">
+                    <label>退勤:</label>
+                    <input type="time" name="endTime" value="">
+                    <button type="submit" class="btn btn-sm btn-primary">追加</button>
+                </div>
+                <div style="margin-top: 6px; color: #666; font-size: 0.9rem;">
+                    ※ この月（<%= currentMonthStr %>）の範囲で日付を選べます。未登録日でも登録できます。
+                </div>
             </form>
         </div>
         
