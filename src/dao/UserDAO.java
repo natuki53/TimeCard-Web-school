@@ -27,7 +27,7 @@ public class UserDAO {
     public User findByLoginIdAndPassword(String loginId, String password) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -95,7 +95,7 @@ public class UserDAO {
     public boolean insert(User user) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -111,7 +111,7 @@ public class UserDAO {
      */
     public int insertAndReturnId(User user) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -145,7 +145,7 @@ public class UserDAO {
     public User findByLoginId(String loginId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -197,7 +197,7 @@ public class UserDAO {
     public User findById(int userId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -259,7 +259,7 @@ public class UserDAO {
 
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -302,7 +302,7 @@ public class UserDAO {
      */
     public User findPublicProfileById(int userId) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -339,7 +339,7 @@ public class UserDAO {
      */
     public boolean updateProfile(int userId, String name, String bio, boolean dmAllowed, String iconFilename) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -376,7 +376,7 @@ public class UserDAO {
      */
     public boolean softDelete(int userId) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -397,7 +397,7 @@ public class UserDAO {
      */
     public boolean updateSecretAnswerHash(int userId, String newSecretAnswerHash) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -418,7 +418,7 @@ public class UserDAO {
      */
     public boolean updatePasswordHash(int userId, String newPasswordHash) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
