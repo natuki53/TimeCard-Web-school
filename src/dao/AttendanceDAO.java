@@ -30,7 +30,7 @@ public class AttendanceDAO {
     public Attendance findByUserIdAndDate(int userId, Date date, Integer groupId) {
         // JDBCドライバをロード
         try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
+			Class.forName("com.mysql.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
@@ -113,7 +113,7 @@ public class AttendanceDAO {
     public boolean insert(Attendance attendance) {
         // JDBCドライバをロード
         try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
+			Class.forName("com.mysql.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
@@ -158,7 +158,7 @@ public class AttendanceDAO {
     public boolean insertAsCorrection(Attendance attendance, boolean correctedByAdmin, int correctedByUserId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -201,7 +201,7 @@ public class AttendanceDAO {
     public boolean update(Attendance attendance) {
         // JDBCドライバをロード
         try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
+			Class.forName("com.mysql.jdbc.Driver");
 		}catch(ClassNotFoundException e) {
 			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
@@ -239,7 +239,7 @@ public class AttendanceDAO {
     public boolean updateAsCorrection(Attendance attendance, boolean correctedByAdmin, int correctedByUserId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -271,7 +271,7 @@ public class AttendanceDAO {
     public boolean hasOpenBreak(int attendanceId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -298,7 +298,7 @@ public class AttendanceDAO {
     public boolean startBreak(int attendanceId, LocalTime breakStart) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -325,7 +325,7 @@ public class AttendanceDAO {
     public boolean endBreak(int attendanceId, LocalTime breakEnd) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -351,7 +351,7 @@ public class AttendanceDAO {
     public LocalTime findOpenBreakStart(int attendanceId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -381,7 +381,7 @@ public class AttendanceDAO {
 
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -413,7 +413,7 @@ public class AttendanceDAO {
     public int sumBreakMinutes(int attendanceId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -455,7 +455,7 @@ public class AttendanceDAO {
     public boolean cancelAttendance(int attendanceId, boolean cancelledByAdmin, int cancelledByUserId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -482,7 +482,7 @@ public class AttendanceDAO {
     public boolean clearCancellation(int attendanceId) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -529,7 +529,7 @@ public class AttendanceDAO {
         
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -596,7 +596,7 @@ public class AttendanceDAO {
 
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -670,7 +670,7 @@ public class AttendanceDAO {
         
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }

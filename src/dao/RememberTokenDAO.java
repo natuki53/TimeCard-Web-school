@@ -54,7 +54,7 @@ public class RememberTokenDAO {
     public RememberToken issueToken(int userId, int days) {
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -85,7 +85,7 @@ public class RememberTokenDAO {
 
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
@@ -114,7 +114,7 @@ public class RememberTokenDAO {
 
         // JDBCドライバをロード
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         } catch(ClassNotFoundException e) {
             throw new IllegalStateException("JDBCドライバを読み込めませんでした");
         }
