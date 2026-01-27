@@ -53,6 +53,19 @@
     <script defer src="<%= request.getContextPath() %>/js/notifications.js"></script>
 </head>
 <body class="with-header">
+
+<%
+Boolean corrected = (Boolean) session.getAttribute("attendanceCorrected");
+if (corrected != null && corrected) {
+%>
+<script>
+    alert("勤怠修正が完了しました");
+</script>
+<%
+    session.removeAttribute("attendanceCorrected");
+}
+%>
+
     <!-- ヘッダー -->
     <header class="header">
         <a href="<%= request.getContextPath() %>/dashboard">

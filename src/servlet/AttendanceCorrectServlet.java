@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import dao.AttendanceDAO;
-import dao.GroupDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import dao.AttendanceDAO;
+import dao.GroupDAO;
 import model.Attendance;
 import model.User;
 import util.AuthUtil;
@@ -123,6 +124,9 @@ public class AttendanceCorrectServlet extends HttpServlet {
             existing.setEndTime(endTime);
             attendanceDAO.updateAsCorrection(existing, correctedByAdmin, loginUser.getId());
         }
+     // insert / update 完了後
+        request.getSession().setAttribute("attendanceCorrected", true);
+
 
         // 元の画面に戻す（なければ勤怠一覧へ）
         String referer = request.getHeader("Referer");
