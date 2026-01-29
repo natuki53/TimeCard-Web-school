@@ -55,14 +55,13 @@
 <body class="with-header">
 
 <%
-Boolean corrected = (Boolean) session.getAttribute("attendanceCorrected");
-if (corrected != null && corrected) {
+String corrected = request.getParameter("corrected");
+if ("1".equals(corrected)) {
 %>
 <script>
     alert("勤怠修正が完了しました");
 </script>
 <%
-    session.removeAttribute("attendanceCorrected");
 }
 %>
 

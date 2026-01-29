@@ -127,14 +127,12 @@ public class AttendanceCorrectServlet extends HttpServlet {
      // insert / update 完了後
         request.getSession().setAttribute("attendanceCorrected", true);
 
+        // 修正完了後は勤怠一覧へ（フラグ付きで）
+        response.sendRedirect(
+            request.getContextPath() + "/attendance/list?corrected=1"
+        );
+        return;
 
-        // 元の画面に戻す（なければ勤怠一覧へ）
-        String referer = request.getHeader("Referer");
-        if (referer != null && !referer.trim().isEmpty()) {
-            response.sendRedirect(referer);
-            return;
-        }
-        response.sendRedirect(request.getContextPath() + "/attendance/list");
     }
 }
 
